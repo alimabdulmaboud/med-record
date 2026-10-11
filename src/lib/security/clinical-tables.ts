@@ -29,12 +29,14 @@ export const CLINICAL_TABLES: readonly string[] = [
   "milestones",
   "pediatric_exams",
 
-  // Nutrition Specialty Tables (to be added in Phase 12)
-  // "nutrition_assessments",
-  // "body_composition",
-  // "energy_plans",
-  // "diet_history",
-  // "meal_plans",
+  // Nutrition Specialty Tables (Phase 12)
+  "nutrition_assessments",
+  "anthropometry",
+  "body_composition",
+  "energy_plans",
+  "diet_history",
+  "meal_plans",
+  "meal_plan_templates",
 ] as const;
 
 /**

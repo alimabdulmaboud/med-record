@@ -28,6 +28,8 @@ import { PrintablePrescription } from "@/components/prescription/PrintablePrescr
 import { isModuleEnabled } from "@/modules/registry";
 import { getFullPediatricRecord } from "@/modules/pediatrics/service";
 import { PediatricsWorkspace } from "@/components/pediatrics/PediatricsWorkspace";
+import { getFullNutritionRecord } from "@/modules/nutrition/service";
+import { NutritionWorkspace } from "@/components/nutrition/NutritionWorkspace";
 import {
   Stethoscope,
   Users,
@@ -946,6 +948,30 @@ export default function DoctorDashboardPage() {
                     weightKg: m.weightKg,
                     heightCm: m.heightCm,
                   }))}
+                />
+              </div>
+            )}
+
+            {/* ============================================================== */}
+            {/* NUTRITION SPECIALTY MODULE (Energy, Anthropometry, Meal Plans) */}
+            {/* ============================================================== */}
+            {isModuleEnabled("nutrition", clinicEnabledModules) && patientSummary && (
+              <div className="mb-6">
+                <NutritionWorkspace
+                  doctor={currentDoctor}
+                  clinicEnabledModules={clinicEnabledModules}
+                  patient={{
+                    id: selectedPatientId,
+                    name: patientSummary.patientName,
+                    age: 32,
+                    gender: patientSummary.gender || "أنثى",
+                  }}
+                  initialRecord={getFullNutritionRecord(
+                    currentDoctor,
+                    selectedPatientId,
+                    clinicEnabledModules
+                  )}
+                  letterhead={clinicLetterhead}
                 />
               </div>
             )}

@@ -491,5 +491,45 @@
       "skin": "Skin & Mucosa",
       "allNormal": "Fill All Normal Findings"
     }
+  },
+  "nutrition": {
+    "title": "Clinical Nutrition & Weight Management",
+    "assessmentTitle": "Initial Nutrition Assessment",
+    "anthropometryTitle": "Anthropometry & Body Composition",
+    "energyTitle": "Energy Needs & Macronutrient Calculator",
+    "dietHistoryTitle": "Diet History & 24h Recall",
+    "mealPlanTitle": "Meal Plan Builder & Protocols",
+    "goal": "Primary Nutrition Goal",
+    "goals": {
+      "weight_loss": "Fat Loss & Weight Reduction",
+      "weight_gain": "Healthy Weight Gain",
+      "muscle_building": "Muscle Hypertrophy & Athletic Performance",
+      "diabetes_management": "Glycemic Control & Insulin Resistance",
+      "hypertension": "Cardiovascular & Blood Pressure Health",
+      "pregnancy_lactation": "Maternal & Lactation Nutrition",
+      "gi_disorders": "Gastrointestinal & IBS Management",
+      "sports_nutrition": "Sports Performance Nutrition",
+      "general_wellness": "General Wellness & Healthy Lifestyle"
+    },
+    "sensitiveEatingDisorderFlag": "Special Alert: History of Disordered Eating (Doctor Confidential)",
+    "waistHipRatio": "Waist-to-Hip Ratio (WHR)",
+    "bodyFat": "Body Fat Percentage (%)",
+    "muscleMass": "Muscle Mass (kg)",
+    "bodyWater": "Body Water (%)",
+    "visceralFat": "Visceral Fat Level",
+    "bmrFormula": "Basal Metabolic Rate Equation (BMR)",
+    "activityLevel": "Physical Activity Level",
+    "targetCalories": "Target Energy (kcal/day)",
+    "macros": {
+      "protein": "Protein",
+      "carbs": "Carbohydrates",
+      "fats": "Healthy Fats"
+    },
+    "templates": {
+      "load": "Load Protocol from Template",
+      "saveAs": "Save As New Clinic Template",
+      "duplicate": "Duplicate & Edit Previous Plan"
+    },
+    "printPlan": "Print Meal Plan for Patient"
   }
 }
