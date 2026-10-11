@@ -21,11 +21,15 @@ export const CLINICAL_TABLES: readonly string[] = [
   "lab_results",
   "clinical_templates",
 
-  // Specialty tables (Pediatrics & Nutrition - to be added in Phase 11 & 12)
-  // "birth_history",
-  // "feeding_history",
-  // "vaccinations",
-  // "milestones",
+  // Pediatrics Specialty Tables (Phase 11)
+  "birth_history",
+  "feeding_history",
+  "vaccine_templates",
+  "vaccinations",
+  "milestones",
+  "pediatric_exams",
+
+  // Nutrition Specialty Tables (to be added in Phase 12)
   // "nutrition_assessments",
   // "body_composition",
   // "energy_plans",

@@ -428,5 +428,68 @@
       "printedSuccess": "تم إرسال أمر الطباعة وتسجيل العملية في سجل التدقيق.",
       "reprintedSuccess": "تمت إعادة طباعة الروشتة وتوثيقها في سجل التدقيق بنجاح."
     }
+  },
+  "pediatrics": {
+    "title": "وحدة طب الأطفال وحديثي الولادة",
+    "growthTitle": "منحنيات النمو (منظمة الصحة العالمية)",
+    "vaccinesTitle": "جدول التطعيمات الإلزامي والخاص",
+    "milestonesTitle": "مراحل التطور والنمو الحركي واللغوي",
+    "historyTitle": "تاريخ الولادة والتغذية",
+    "examTitle": "الفحص الإكلينيكي للأطفال",
+    "weightForAge": "الوزن بالنسبة للعمر",
+    "heightForAge": "الطول بالنسبة للعمر",
+    "headCircumference": "محيط الرأس بالنسبة للعمر",
+    "bmiForAge": "مؤشر كتلة الجسم بالنسبة للعمر",
+    "chronologicalAge": "العمر الزمني",
+    "correctedAge": "العمر المصحح (للأطفال المبتسرين)",
+    "useCorrectedAge": "تطبيق العمر المصحح في الحسابات",
+    "gestationalAge": "عمر الحمل عند الولادة (أسابيع)",
+    "birthWeight": "وزن الولادة (كجم)",
+    "birthLength": "طول الولادة (سم)",
+    "birthHeadCircumference": "محيط الرأس عند الولادة (سم)",
+    "deliveryType": "طريقة الولادة",
+    "vaginal": "طبيعية",
+    "cSection": "قيصرية",
+    "apgarScore": "مقياس أبغار (1 و 5 دقائق)",
+    "nicuStay": "دخول الحضانة",
+    "nicuDays": "مدة البقاء بالحضانة (أيام)",
+    "feedingType": "نوع التغذية",
+    "exclusiveBreastfeeding": "رضاعة طبيعية مطلقة",
+    "formula": "حليب صناعي",
+    "mixed": "رضاعة مشتركة",
+    "solidsWeaned": "فطام وأطعمة صلبة",
+    "formulaName": "اسم الحليب الصناعي",
+    "solidsStartAge": "عمر بدء الأطعمة التكميلية (شهور)",
+    "vitaminD": "فيتامين د",
+    "iron": "حديد",
+    "administerVaccine": "تسجيل إعطاء تطعيم",
+    "vaccineName": "اسم التطعيم",
+    "doseNumber": "رقم الجرعة",
+    "batchNumber": "رقم التشغيلة / اللوت",
+    "site": "موضع الحقن",
+    "status": {
+      "administered": "تم التطعيم",
+      "due": "مستحق الآن",
+      "overdue": "متأخر",
+      "upcoming": "قادم"
+    },
+    "milestones": {
+      "achieved": "متحقق",
+      "notAchieved": "لم يتحقق بعد",
+      "grossMotor": "حركي كبير",
+      "fineMotor": "حركي دقيق",
+      "speechLanguage": "تخاطب ولغة",
+      "cognitiveSocial": "إدراكي واجتماعي"
+    },
+    "exam": {
+      "general": "المظهر العام والنشاط",
+      "headNeck": "الرأس والرقبة واليافوخ",
+      "chest": "الصدر والتنفس",
+      "heart": "القلب والدورة الدموية",
+      "abdomen": "البطن والأحشاء",
+      "neuro": "الجهاز العصبي وردود الأفعال",
+      "skin": "الجلد والأغشية",
+      "allNormal": "تعبئة الفحص الطبيعي (سليم)"
+    }
   }
 }

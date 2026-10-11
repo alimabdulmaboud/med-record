@@ -25,6 +25,9 @@ import {
   Visit,
 } from "@/lib/clinical/types";
 import { PrintablePrescription } from "@/components/prescription/PrintablePrescription";
+import { isModuleEnabled } from "@/modules/registry";
+import { getFullPediatricRecord } from "@/modules/pediatrics/service";
+import { PediatricsWorkspace } from "@/components/pediatrics/PediatricsWorkspace";
 import {
   Stethoscope,
   Users,
@@ -84,6 +87,9 @@ export default function DoctorDashboardPage() {
     urgent_fee_multiplier: 3,
     end_of_day_time: "22:00",
   });
+
+  // Enabled modules for current clinic (pediatrics enabled for clinic-1)
+  const [clinicEnabledModules] = useState<string[]>(["pediatrics"]);
 
   // Seed / Live Queue Entries
   const [queueEntries, setQueueEntries] = useState<QueueEntry[]>([
@@ -908,6 +914,39 @@ export default function DoctorDashboardPage() {
                     </div>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* ============================================================== */}
+            {/* PEDIATRICS SPECIALTY MODULE (Growth, Vaccines, Milestones) */}
+            {/* ============================================================== */}
+            {isModuleEnabled("pediatrics", clinicEnabledModules) && patientSummary && (
+              <div className="mb-6">
+                <PediatricsWorkspace
+                  doctor={currentDoctor}
+                  clinicEnabledModules={clinicEnabledModules}
+                  patient={{
+                    id: selectedPatientId,
+                    name: patientSummary.patientName,
+                    dateOfBirth: patientSummary.dateOfBirth || "2022-04-15",
+                    gender: patientSummary.gender || "ذكر",
+                  }}
+                  initialRecord={getFullPediatricRecord(
+                    currentDoctor,
+                    selectedPatientId,
+                    patientSummary.dateOfBirth || "2022-04-15",
+                    clinicEnabledModules
+                  )}
+                  currentMeasurements={{
+                    weightKg: weightKg ? Number(weightKg) : undefined,
+                    heightCm: heightCm ? Number(heightCm) : undefined,
+                  }}
+                  historicalMeasurements={patientSummary.measurementsTimeline.map((m) => ({
+                    date: m.recordedAt,
+                    weightKg: m.weightKg,
+                    heightCm: m.heightCm,
+                  }))}
+                />
               </div>
             )}
 

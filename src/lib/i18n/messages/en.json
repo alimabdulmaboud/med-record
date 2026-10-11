@@ -428,5 +428,68 @@
       "printedSuccess": "Print job triggered and logged to audit trail.",
       "reprintedSuccess": "Prescription reprinted and verified in audit log."
     }
+  },
+  "pediatrics": {
+    "title": "Pediatrics & Neonatology Module",
+    "growthTitle": "WHO Child Growth Standards",
+    "vaccinesTitle": "Mandatory & Private Vaccination Schedule",
+    "milestonesTitle": "Developmental Milestones Checklist",
+    "historyTitle": "Birth & Feeding History",
+    "examTitle": "Pediatric Physical Examination",
+    "weightForAge": "Weight-for-age",
+    "heightForAge": "Length/Height-for-age",
+    "headCircumference": "Head Circumference-for-age",
+    "bmiForAge": "BMI-for-age",
+    "chronologicalAge": "Chronological Age",
+    "correctedAge": "Corrected Age (Preterm Infants)",
+    "useCorrectedAge": "Apply Corrected Age to Calculations",
+    "gestationalAge": "Gestational Age at Birth (weeks)",
+    "birthWeight": "Birth Weight (kg)",
+    "birthLength": "Birth Length (cm)",
+    "birthHeadCircumference": "Birth Head Circumference (cm)",
+    "deliveryType": "Delivery Type",
+    "vaginal": "Vaginal",
+    "cSection": "Cesarean Section",
+    "apgarScore": "APGAR Score (1 & 5 min)",
+    "nicuStay": "NICU Admission",
+    "nicuDays": "NICU Stay Duration (days)",
+    "feedingType": "Feeding Type",
+    "exclusiveBreastfeeding": "Exclusive Breastfeeding",
+    "formula": "Formula",
+    "mixed": "Mixed Feeding",
+    "solidsWeaned": "Solids / Weaned",
+    "formulaName": "Formula Brand / Name",
+    "solidsStartAge": "Introduction of Solids (months)",
+    "vitaminD": "Vitamin D",
+    "iron": "Iron Supplement",
+    "administerVaccine": "Record Administered Vaccine",
+    "vaccineName": "Vaccine Name",
+    "doseNumber": "Dose Number",
+    "batchNumber": "Batch / Lot Number",
+    "site": "Injection Site",
+    "status": {
+      "administered": "Administered",
+      "due": "Due Now",
+      "overdue": "Overdue",
+      "upcoming": "Upcoming"
+    },
+    "milestones": {
+      "achieved": "Achieved",
+      "notAchieved": "Not Achieved",
+      "grossMotor": "Gross Motor",
+      "fineMotor": "Fine Motor",
+      "speechLanguage": "Speech & Language",
+      "cognitiveSocial": "Cognitive & Social"
+    },
+    "exam": {
+      "general": "General Appearance & Activity",
+      "headNeck": "Head, Neck & Fontanelles",
+      "chest": "Chest & Respiration",
+      "heart": "Heart & Circulation",
+      "abdomen": "Abdomen & Viscera",
+      "neuro": "Nervous System & Reflexes",
+      "skin": "Skin & Mucosa",
+      "allNormal": "Fill All Normal Findings"
+    }
   }
 }
