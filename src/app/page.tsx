@@ -151,6 +151,14 @@ export default function HomePage() {
             </Link>
 
             <Link
+              href="/consultations"
+              className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 px-6 rounded-xl text-base shadow-sm hover:shadow transition-all"
+            >
+              <Apple className="w-5 h-5" />
+              <span>عيادة التغذية العلاجية</span>
+            </Link>
+
+            <Link
               href="/owner/reports"
               className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-6 rounded-xl text-base shadow-sm hover:shadow transition-all"
             >

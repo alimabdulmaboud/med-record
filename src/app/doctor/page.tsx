@@ -90,8 +90,8 @@ export default function DoctorDashboardPage() {
     end_of_day_time: "22:00",
   });
 
-  // Enabled modules for current clinic (pediatrics enabled for clinic-1)
-  const [clinicEnabledModules] = useState<string[]>(["pediatrics"]);
+  // Enabled modules for current clinic (pediatrics and nutrition enabled)
+  const [clinicEnabledModules] = useState<string[]>(["pediatrics", "nutrition"]);
 
   // Seed / Live Queue Entries
   const [queueEntries, setQueueEntries] = useState<QueueEntry[]>([
