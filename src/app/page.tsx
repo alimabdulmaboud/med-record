@@ -19,6 +19,7 @@ import {
   Building2,
   Users,
   Clock,
+  TrendingUp,
 } from "lucide-react";
 
 export default function HomePage() {
@@ -147,6 +148,14 @@ export default function HomePage() {
             >
               <Stethoscope className="w-5 h-5" />
               <span>{t("doctor.title")}</span>
+            </Link>
+
+            <Link
+              href="/owner/reports"
+              className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-6 rounded-xl text-base shadow-sm hover:shadow transition-all"
+            >
+              <TrendingUp className="w-5 h-5" />
+              <span>{t("reports.title")}</span>
             </Link>
 
             <Link

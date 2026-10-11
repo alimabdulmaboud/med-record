@@ -531,5 +531,51 @@
       "duplicate": "Duplicate & Edit Previous Plan"
     },
     "printPlan": "Print Meal Plan for Patient"
+  },
+  "reports": {
+    "title": "Owner Reports & Operational KPIs",
+    "subtitle": "Aggregated clinic performance, wait times, attrition rates, and revenue metrics (zero clinical data)",
+    "privacyBanner": "This dashboard is strictly for clinic administration and displays aggregated statistical indicators only, with no medical or diagnostic data.",
+    "exportCsv": "Export to CSV",
+    "filters": {
+      "period": "Time Period",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "last7Days": "Last 7 Days",
+      "last30Days": "Last 30 Days",
+      "allDoctors": "All Doctors",
+      "doctor": "Doctor"
+    },
+    "kpis": {
+      "totalQueue": "Total Queue Entries",
+      "patientsSeen": "Completed Visits",
+      "newVsFollowUp": "New / Follow-up",
+      "avgWaitTime": "Average Wait Time",
+      "medianWaitTime": "Median Wait Time",
+      "leftRate": "Attrition Rate (Left)",
+      "autoClosed": "Auto-closed at EOD",
+      "noShowRate": "No-show Rate",
+      "lostRevenue": "Est. Lost Revenue",
+      "lostRevenueDisclaimer": "Approximate estimate based on patients who left before consultation",
+      "billedTotal": "Total Billed",
+      "paidTotal": "Total Collected",
+      "unpaidTotal": "Uncollected Balance",
+      "collectionRate": "Collection Rate",
+      "urgentCount": "Urgent Visits",
+      "urgentShare": "Urgent Visit Share"
+    },
+    "charts": {
+      "waitingByHour": "Wait Times by Hour of Day",
+      "doctorVolume": "Visits and Revenue by Doctor"
+    },
+    "doctorTable": {
+      "doctor": "Doctor",
+      "completed": "Completed Visits",
+      "new": "New",
+      "followUp": "Follow-up",
+      "avgWait": "Avg Wait",
+      "paid": "Collected",
+      "unpaid": "Uncollected"
+    }
   }
 }
