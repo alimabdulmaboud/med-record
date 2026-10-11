@@ -237,9 +237,15 @@ Next.js (App Router) + TypeScript + Tailwind + shadcn/ui · Supabase (Postgres, 
 
 ## Changelog
 
+- 2026-10-11 — v1.0: Full SaaS v1.0 Complete! Phase 15 Hardening and handover finished (docs/SECURITY_REPORT.md, docs/OPERATIONS.md, docs/BACKUP_RESTORE.md, open data export in JSON/CSV, 100% Arabic translation parity verified, 17 test suites and 169 unit tests passing).
+- 2026-10-11 — v0.8: Phase 14 completed. Reminders module implemented with extensible NotificationChannel abstraction (manual copy-to-clipboard channel shipped, WhatsApp/SMS ready), template interpolation, and daily reception reminders workspace (/reception/reminders).
+- 2026-10-11 — v0.7: Phase 13 completed. Clinic owner reports implemented (/owner/reports) with aggregate KPI cards, wait time hourly Recharts curves, doctor volume distribution, estimated lost revenue, and UTF-8 BOM CSV export (zero clinical data exposed).
+- 2026-10-11 — v0.6: Phase 12 completed. Nutrition specialty module delivered with BMR (Mifflin-St Jeor / Harris-Benedict / Katch-McArdle) and TDEE energy engine, macro splits, InBody tracking, meal plan builder, and printable patient meal plan.
+- 2026-10-11 — v0.5: Phase 11 completed. Pediatrics specialty module delivered with WHO Child Growth Standards (LMS percentile and Z-score calculation), premature baby corrected age, official Egyptian MOH mandatory vaccination schedule, developmental milestones checklist, and interactive Recharts growth charts.
 - 2026-10-11 — v0.4: Phase 10 completed. Printable prescription implemented with A4 and A5 layouts, official clinic letterhead from settings, browser print stylesheet, reprint action in history, and audit logging for print events.
 - 2026-10-11 — v0.3: Phase 9 completed. Activated 10 core clinical tables with doctor-only RLS, audit log on clinical chart open, doctor dashboard (/doctor) with vital signs charts and prescription builder, and verified with Playwright e2e test suite.
 - 2026-10-10 — v0.2: Phase 0 decisions aligned and ratified (strict soft-delete, owner denied clinical access without doctor role, both owner & admin invite, late arrival placed at end of current waiting, Egyptian MOH seed + WHO LMS tables).
 - 2026-10-10 — v0.1: first version from the scoping interview. WhatsApp postponed; reminders ship as a manual list. Platform admin has no access to medical content.
+
 
 

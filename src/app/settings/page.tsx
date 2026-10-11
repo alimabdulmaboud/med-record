@@ -20,14 +20,17 @@ import {
   ArrowLeft,
   LayoutDashboard,
   ShieldAlert,
+  Download,
 } from "lucide-react";
+import { ClinicExportService } from "@/lib/export/service";
 
 export default function ClinicSettingsPage() {
   // Current user role simulator (defaults to clinic_owner, toggleable to test read-only)
   const [currentUserRole, setCurrentUserRole] = useState<"clinic_owner" | "doctor" | "receptionist">("clinic_owner");
   const isOwner = currentUserRole === "clinic_owner";
 
-  const [activeTab, setActiveTab] = useState<"general" | "pricing" | "modules" | "queue">("general");
+  const [activeTab, setActiveTab] = useState<"general" | "pricing" | "modules" | "queue" | "export">("general");
+  const [exportStatus, setExportStatus] = useState<string | null>(null);
 
   // Form State initialized with realistic seeded clinic settings
   const [settings, setSettings] = useState<ClinicSettings>({
@@ -173,6 +176,50 @@ export default function ClinicSettingsPage() {
     setTimeout(() => setSuccessMessage(false), 3000);
   };
 
+  const handleExportJson = async () => {
+    try {
+      const exportService = new ClinicExportService();
+      const res = await exportService.exportClinicData(
+        { id: "owner-1", clinicId: "clinic-1", roles: ["clinic_owner"] },
+        "clinic-1",
+        settings.name
+      );
+      const blob = new Blob([JSON.stringify(res.json, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `clinic_export_${new Date().toISOString().substring(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setExportStatus("تم تصدير ملف JSON بنجاح وتوثيق الإجراء في سجل التدقيق.");
+      setTimeout(() => setExportStatus(null), 4000);
+    } catch (err: any) {
+      setErrorMessage(err.message || "فشل تصدير البيانات");
+    }
+  };
+
+  const handleExportCsv = async () => {
+    try {
+      const exportService = new ClinicExportService();
+      const res = await exportService.exportClinicData(
+        { id: "owner-1", clinicId: "clinic-1", roles: ["clinic_owner"] },
+        "clinic-1",
+        settings.name
+      );
+      const blob = new Blob([res.csvPatients], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `clinic_patients_${new Date().toISOString().substring(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setExportStatus("تم تصدير ملفات CSV بنجاح بتنسيق UTF-8 BOM للأكسيل.");
+      setTimeout(() => setExportStatus(null), 4000);
+    } catch (err: any) {
+      setErrorMessage(err.message || "فشل تصدير البيانات");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-12">
       {/* Top Header */}
@@ -316,6 +363,19 @@ export default function ClinicSettingsPage() {
           >
             <Clock className="w-4 h-4" />
             <span>{t("settings.tabs.queue")}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("export")}
+            className={`flex items-center gap-2 py-3 px-4 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap ${
+              activeTab === "export"
+                ? "border-blue-600 text-blue-700 bg-blue-50/50 rounded-t-lg"
+                : "border-transparent text-slate-500 hover:text-slate-900"
+            }`}
+          >
+            <Download className="w-4 h-4" />
+            <span>تصدير البيانات (Open Export)</span>
           </button>
         </div>
 
@@ -785,6 +845,73 @@ export default function ClinicSettingsPage() {
                     </div>
                   )}
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 5: DATA EXPORT (Phase 15) */}
+          {activeTab === "export" && (
+            <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-6">
+              <div>
+                <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                  <Download className="w-5 h-5 text-blue-600" />
+                  <span>تصدير بيانات العيادة (Open Data Export)</span>
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">
+                  حق المالك القانوني في تنزيل نسخة كاملة ومستقلة من سجلات عيادته بتنسيقات مفتوحة (JSON و CSV) متوافقة مع الأنظمة الأخرى.
+                </p>
+              </div>
+
+              {exportStatus && (
+                <div className="flex items-center gap-2 p-3 text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-xl">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>{exportStatus}</span>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                <div className="p-5 border border-slate-200 rounded-xl bg-slate-50/60 space-y-3">
+                  <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
+                    <span className="font-mono text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">JSON</span>
+                    <span>ملف البيانات الشامل (Full Backup)</span>
+                  </div>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    يتضمن بيانات العيادة، إعداداتها، المرضى، المواعيد، وتاريخ الطابور في ملف JSON مهيكل.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleExportJson}
+                    className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs px-4 py-2.5 rounded-xl shadow-xs transition-colors"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>تنزيل ملف JSON</span>
+                  </button>
+                </div>
+
+                <div className="p-5 border border-slate-200 rounded-xl bg-slate-50/60 space-y-3">
+                  <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
+                    <span className="font-mono text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded">CSV</span>
+                    <span>جداول البيانات للأكسيل (Excel CSV)</span>
+                  </div>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    جداول المرضى والمواعيد والطابور بترميز UTF-8 مع BOM لضمان عدم تلف الحروف العربية في برنامج Excel.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleExportCsv}
+                    className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs px-4 py-2.5 rounded-xl shadow-xs transition-colors"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>تنزيل جداول CSV</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 leading-relaxed flex items-start gap-2.5">
+                <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <p>
+                  <strong>ملاحظة أمنية ومطابقة للخصوصية:</strong> يتم توثيق كل عملية تصدير كاملة للبيانات تلقائياً في سجل العمليات والتدقيق (audit_log) لحماية خصوصية بيانات المرضى والعيادة.
+                </p>
               </div>
             </div>
           )}
