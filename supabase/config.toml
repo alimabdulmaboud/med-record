@@ -1,0 +1,40 @@
+# Supabase local configuration
+project_id = "med-saas-local"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[db.pooler]
+enabled = false
+port = 54329
+
+[studio]
+enabled = true
+port = 54323
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["https://localhost:3000"]
+jwt_expiry = 3600
+enable_signup = false # Rule 4: Invitation only, no self sign-up
+
+[auth.email]
+enable_signup = false # Rule 4: Invitation only
+double_confirm_changes = true
+enable_confirmations = false
+
+[storage]
+enabled = true
+
+[realtime]
+enabled = true

@@ -1,0 +1,432 @@
+{
+  "app": {
+    "name": "Med",
+    "tagline": "Clinic Management Platform",
+    "description": "Comprehensive clinic management, smart queue, and specialty medical encounters"
+  },
+  "common": {
+    "welcome": "Welcome to Med Platform",
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "archive": "Archive",
+    "restore": "Restore",
+    "search": "Search",
+    "actions": "Actions",
+    "status": "Status",
+    "date": "Date",
+    "time": "Time",
+    "notes": "Notes",
+    "required": "Required",
+    "back": "Back"
+  },
+  "auth": {
+    "login": "Sign In",
+    "loginTitle": "Sign in to your account",
+    "loginSubtitle": "Access is available by invitation only",
+    "email": "Email address",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "fullName": "Full Name",
+    "phone": "Phone Number",
+    "signingIn": "Signing in...",
+    "signOut": "Sign Out",
+    "signOutEverywhere": "Sign out of all sessions",
+    "invitationOnlyNotice": "Self-registration is disabled. Accounts are created by invitation link only.",
+    "archivedAccountError": "This account is inactive or archived. Please contact administration.",
+    "invalidCredentials": "Invalid email or password.",
+    "sessionTimeoutNotice": "Your session has expired due to inactivity. Please sign in again."
+  },
+  "invitations": {
+    "title": "Invitations",
+    "inviteUser": "Invite Staff Member",
+    "acceptTitle": "Accept Invitation & Activate Account",
+    "acceptSubtitle": "You have been invited to join {clinicName}",
+    "assignedRoles": "Your assigned roles:",
+    "setPasswordPrompt": "Please set a secure password to activate your account:",
+    "activateButton": "Activate Account & Sign In",
+    "activating": "Activating...",
+    "linkCopied": "Invitation link copied successfully",
+    "errors": {
+      "notFound": "Invitation link is invalid or not found.",
+      "expired": "Sorry, this invitation link has expired (7-day validity). Please request a new invitation.",
+      "revoked": "This invitation has been revoked by clinic administration.",
+      "alreadyAccepted": "This invitation has already been accepted. You may sign in directly.",
+      "tenantMismatch": "A clinic owner cannot issue invitations for another clinic.",
+      "insufficientPermissions": "You do not have permission to issue invitations.",
+      "passwordMismatch": "Passwords do not match.",
+      "passwordTooShort": "Password must be at least 8 characters long."
+    }
+  },
+  "modules": {
+    "core": {
+      "name": "Shared Core",
+      "description": "Foundational features for all specialties: booking, queue, visit, and prescription"
+    },
+    "pediatrics": {
+      "name": "Pediatrics Module",
+      "description": "WHO growth charts, vaccination schedule, birth and feeding history"
+    },
+    "nutrition": {
+      "name": "Clinical Nutrition Module",
+      "description": "Nutritional assessment, anthropometry, energy calculation, and meal plans"
+    }
+  },
+  "roles": {
+    "platform_admin": "Platform Admin",
+    "clinic_owner": "Clinic Owner",
+    "doctor": "Doctor",
+    "receptionist": "Receptionist"
+  },
+  "queue": {
+    "states": {
+      "booked": "Booked",
+      "waiting": "Waiting",
+      "in_consultation": "In Consultation",
+      "completed": "Completed",
+      "left": "Left",
+      "no_show": "No Show",
+      "cancelled": "Cancelled"
+    }
+  },
+  "home": {
+    "openLogin": "Open Login Page",
+    "openInvite": "Test Accept Invitation Page",
+    "testAccountsTitle": "Ready Test Accounts (Dev Seed)",
+    "testAccountsDesc": "These accounts are seeded in database with default password:",
+    "copyCredentials": "Copy Credentials",
+    "copied": "Copied successfully!",
+    "systemStatus": "System Readiness",
+    "securityStatus": "Tenancy & RLS Security: 100% Enforced",
+    "invitationOnly": "Invitation-Only Access: Active",
+    "quickLinks": "Quick Test Links",
+    "platformSuperAdmin": "Platform Super Admin",
+    "pediatricsClinic": "Pediatrics Clinic (Al-Nour)",
+    "nutritionClinic": "Nutrition Clinic (Al-Hayat)"
+  },
+  "admin": {
+    "title": "Platform Admin Console",
+    "subtitle": "Manage clinics, users, invitations, and audit trail",
+    "privacyBanner": "هذه اللوحة لا تعرض أي بيانات طبية",
+    "privacyBannerDesc": "By strict medical privacy policy, platform admins have zero access to clinical or patient medical records.",
+    "tabs": {
+      "clinics": "Clinics",
+      "users": "Users",
+      "invitations": "Invitations",
+      "auditLog": "Audit Log"
+    },
+    "clinics": {
+      "title": "Registered Clinics",
+      "createClinic": "Create New Clinic",
+      "clinicName": "Clinic Name",
+      "usersCount": "Staff Count",
+      "status": "Clinic Status",
+      "actions": "Clinic Actions",
+      "suspend": "Suspend Clinic",
+      "unsuspend": "Unsuspend Clinic",
+      "archive": "Archive Clinic",
+      "restore": "Restore Clinic",
+      "editName": "Edit Name",
+      "statusActive": "Active",
+      "statusSuspended": "Suspended",
+      "statusArchived": "Archived",
+      "createdSuccessfully": "Clinic created successfully",
+      "updatedSuccessfully": "Clinic details updated",
+      "suspendedNotice": "Users belonging to suspended clinics cannot log in."
+    },
+    "users": {
+      "title": "Users Across All Clinics",
+      "userName": "Full Name",
+      "email": "Email Address",
+      "clinic": "Clinic",
+      "roles": "Assigned Roles",
+      "status": "Status",
+      "statusActive": "Active",
+      "statusArchived": "Archived",
+      "archiveUser": "Archive",
+      "restoreUser": "Restore"
+    },
+    "invitations": {
+      "title": "Staff Invitations Management",
+      "inviteOwner": "Invite Clinic Owner",
+      "selectClinic": "Select Clinic",
+      "recipientEmail": "Recipient Email",
+      "expiry": "Expiry Date",
+      "status": "Status",
+      "resend": "Renew & Resend",
+      "revoke": "Revoke Invite",
+      "copyLink": "Copy Link",
+      "inviteSentSuccess": "Invitation link created successfully"
+    },
+    "audit": {
+      "title": "Administrative Audit Log",
+      "filterAction": "Filter by Action",
+      "filterClinic": "Filter by Clinic",
+      "allActions": "All Actions",
+      "allClinics": "All Clinics",
+      "actor": "Actor",
+      "action": "Action",
+      "entity": "Entity",
+      "date": "Date & Time",
+      "details": "Details"
+    }
+  },
+  "settings": {
+    "title": "Clinic Settings",
+    "subtitle": "Configure queue policies, consultation pricing, letterhead, and specialty modules",
+    "readOnlyNotice": "You are viewing clinic settings in read-only mode. Editing is restricted to the clinic owner.",
+    "saveChanges": "Save Settings",
+    "savedSuccess": "Clinic settings updated successfully",
+    "tabs": {
+      "general": "Letterhead & Info",
+      "pricing": "Consultation Pricing",
+      "modules": "Specialty Modules",
+      "queue": "Smart Queue Rules"
+    },
+    "letterhead": {
+      "clinicName": "Official Clinic Name",
+      "address": "Printed Address",
+      "phone": "Contact Phone",
+      "doctorsTitle": "Clinic Doctors & Credentials for Letterhead",
+      "addDoctor": "Add Doctor to Letterhead",
+      "removeDoctor": "Remove Doctor",
+      "doctorName": "Doctor Name",
+      "doctorTitle": "Title / Degree",
+      "doctorSpecialty": "Specialty"
+    },
+    "pricing": {
+      "title": "Medical Consultation Pricing",
+      "newPrice": "New Consultation Price",
+      "followUpPrice": "Follow-up Price",
+      "quickConsultPrice": "Quick Consult Price",
+      "currency": "EGP"
+    },
+    "modules": {
+      "title": "Enable Specialty Modules",
+      "desc": "Select the specialty modules needed by your clinic to activate their dedicated charts and templates."
+    },
+    "queue": {
+      "title": "Smart Queue Rules & Thresholds",
+      "arriveBefore": "Grace Arrival Window (Minutes)",
+      "arriveBeforeDesc": "Booked patients must arrive this many minutes before appointment time to maintain booking priority, otherwise placed after currently waiting patients.",
+      "skipAlert": "Skip Alert Window (Minutes)",
+      "skipAlertDesc": "Alert reception if a waiting patient has been skipped for longer than this duration.",
+      "endOfDay": "End of Day Time (HH:MM)",
+      "endOfDayDesc": "Remaining active queue entries will be closed automatically as left (auto_closed).",
+      "urgentSection": "Paid Urgent Consultation",
+      "urgentToggle": "Enable Paid Urgent Queue Option",
+      "urgentDesc": "Allows reception to place patient right after the current consultation with fee multiplier.",
+      "urgentMultiplier": "Urgent Fee Multiplier",
+      "multiplierSuffix": "times normal fee",
+      "modal": {
+        "title": "Paid Urgent Queue Acknowledgment",
+        "body": "Important Warning: Enabling paid urgent consultations places patients at the front of the queue ahead of on-time patients for a multiplier fee. Full ethical and operational responsibility rests solely with clinic management.",
+        "confirm": "I Acknowledge and Accept Responsibility, Enable",
+        "cancel": "Cancel"
+      }
+    }
+  },
+  "patients": {
+    "title": "Patients & Demographics Registry",
+    "subtitle": "Manage patient profiles, guardians, and sibling linking by phone",
+    "registerNew": "Register New Patient",
+    "searchPlaceholder": "Search by patient name or guardian phone...",
+    "patientName": "Patient Name",
+    "dob": "Date of Birth",
+    "sex": "Sex",
+    "male": "Male",
+    "female": "Female",
+    "age": "Age",
+    "notes": "Administrative Notes",
+    "guardianInfo": "Guardian / Accompanying Parent Information",
+    "guardianName": "Guardian Name",
+    "guardianPhone": "Guardian Phone Number",
+    "relationship": "Relationship",
+    "relFather": "Father",
+    "relMother": "Mother",
+    "relGuardian": "Legal Guardian",
+    "relOther": "Other",
+    "siblingsDetected": "Family members (siblings) found matching this phone number!",
+    "linkToExisting": "Link to this Guardian (Siblings)",
+    "createNewGuardian": "Create as New Guardian",
+    "siblingsCount": "{count} registered siblings",
+    "archivePatient": "Archive Patient",
+    "restorePatient": "Restore Patient",
+    "registeredSuccess": "Patient registered and linked to guardian successfully",
+    "updatedSuccess": "Patient details updated successfully",
+    "noResults": "No patients match your search criteria.",
+    "allPatients": "All Active Patients",
+    "linkedGuardians": "Linked Guardians",
+    "savePatient": "Save & Register Patient",
+    "relSelf": "Self (Adult Patient)",
+    "isSelfContact": "Patient is an adult and their own contact",
+    "duplicateWarning": "Warning: A patient with the same name, date of birth, and guardian already exists!",
+    "confirmDuplicate": "Confirm and register despite match",
+    "editPatient": "Edit Details",
+    "patientDetails": "Patient Profile & Demographics",
+    "cancel": "Cancel",
+    "saveChanges": "Save Changes",
+    "archivedPatients": "Archived Records",
+    "filterAll": "All",
+    "filterActive": "Active",
+    "filterArchived": "Archived",
+    "familyMembers": "Registered Family Members (Siblings)",
+    "noFamilyMembers": "No other family members registered under this number.",
+    "actionNotice": "Per reception privacy permissions, no clinical data is accessible here.",
+    "privacyNotice": "Patient registry is strictly restricted to demographics and appointment scheduling."
+  },
+  "reception": {
+    "title": "Reception & Live Queue Dashboard",
+    "subtitle": "Monitor patient flow, consultation calls, check-ins, and appointments",
+    "connectionLive": "Connected to server (Realtime)",
+    "connectionOffline": "Reconnecting...",
+    "privacyBanner": "Reception screen strictly restricted to queue and admin data — no clinical data is displayed.",
+    "counters": {
+      "waiting": "Waiting Now",
+      "inConsultation": "In Consultation",
+      "completedToday": "Completed Today",
+      "leftToday": "Left Today"
+    },
+    "tabs": {
+      "liveQueue": "Live Waiting Queue",
+      "todayAppointments": "Today's Appointments",
+      "skipAlerts": "Skip Alerts"
+    },
+    "actions": {
+      "checkIn": "Check In",
+      "callNext": "Call Next",
+      "markLeft": "Mark Left",
+      "markNoShow": "No-show",
+      "cancel": "Cancel",
+      "markPaid": "Mark Paid",
+      "markUnpaid": "Mark Unpaid",
+      "reorder": "Reorder",
+      "setPriority": "Set Priority",
+      "quickBook": "New Appointment",
+      "snooze": "Snooze 15 min"
+    },
+    "priority": {
+      "normal": "Normal",
+      "urgent": "Paid Urgent",
+      "critical": "Critical"
+    },
+    "payment": {
+      "paid": "Paid",
+      "unpaid": "Unpaid"
+    },
+    "alerts": {
+      "title": "Waiting Patient Skip Alert",
+      "desc": "This patient was skipped by a later arrival and has waited for over {minutes} minutes.",
+      "noAlerts": "No active skip alerts currently."
+    },
+    "reorderModal": {
+      "title": "Reorder Queue Ticket",
+      "body": "Select target position and provide mandatory audit reason:",
+      "targetPosition": "Target Queue Position",
+      "reasonLabel": "Reason for Reorder (Mandatory)",
+      "reasonPlaceholder": "e.g. Doctor request to prioritize patient, family emergency...",
+      "confirm": "Confirm New Order",
+      "cancel": "Cancel"
+    },
+    "priorityModal": {
+      "title": "Update Patient Priority",
+      "selectPriority": "Select Priority Level:",
+      "urgentNotice": "Paid urgent multiplies consultation fee by {multiplier}x and requires approver and reason.",
+      "approver": "Authorized Approver",
+      "reason": "Urgent Reason",
+      "confirm": "Apply Priority",
+      "cancel": "Cancel"
+    },
+    "bookingModal": {
+      "title": "Book New Appointment",
+      "selectPatient": "Select Patient",
+      "searchPatient": "Search by patient name or guardian phone...",
+      "selectDoctor": "Doctor",
+      "appointmentTime": "Appointment Time",
+      "notes": "Booking Notes",
+      "saveBooking": "Confirm Booking",
+      "cancel": "Cancel"
+    },
+    "filterDoctor": "Filter by Doctor",
+    "allDoctors": "All Clinic Doctors",
+    "queueEmpty": "The waiting queue is currently empty.",
+    "waitingMinutes": "{minutes} min",
+    "patientRank": "Ticket #{rank}"
+  },
+  "doctor": {
+    "title": "Doctor Dashboard & Clinical Record",
+    "subtitle": "Manage waiting queue, examine patients, prescribe treatments and schedule follow-ups",
+    "queue": {
+      "title": "Doctor Consultation Queue",
+      "waitingCount": "Waiting ({count})",
+      "callNext": "Call Next Patient",
+      "calling": "Calling...",
+      "noWaiting": "No patients currently waiting in queue.",
+      "currentConsultation": "Current Patient In Consultation Room",
+      "openChart": "Open Clinical Chart",
+      "waitingSince": "Waiting for {minutes} min",
+      "inConsultationSince": "In consultation for {minutes} min"
+    },
+    "chart": {
+      "allergyAlertTitle": "Clinical Allergy Alert (Critical Safety Warning)",
+      "noAllergies": "No known allergies recorded for this patient",
+      "chronicConditions": "Chronic Conditions & Medical History",
+      "noChronic": "No chronic conditions recorded",
+      "currentMedications": "Current & Ongoing Medications",
+      "noMedications": "No ongoing medications recorded",
+      "previousVisits": "Previous Visits Timeline",
+      "noPreviousVisits": "This is the patient's first recorded visit at the clinic",
+      "measurementsTrend": "Vital Signs & Measurements Trends",
+      "auditNotice": "Opening this medical chart has been automatically logged to the append-only audit trail."
+    },
+    "visitForm": {
+      "title": "Record Current Consultation",
+      "complaint": "Chief Complaint",
+      "complaintPlaceholder": "Enter patient or guardian chief complaint in detail...",
+      "measurements": "Current Vital Signs",
+      "weight": "Weight (kg)",
+      "height": "Height (cm)",
+      "temp": "Temp (°C)",
+      "pulse": "Pulse (bpm)",
+      "bp": "Blood Pressure (systolic / diastolic)",
+      "spo2": "Oxygen SpO2 (%)",
+      "diagnosis": "Clinical Diagnosis",
+      "diagnosisPlaceholder": "Type clinical diagnosis or select from common diagnoses below...",
+      "commonDiagnoses": "Quick Common Diagnoses:",
+      "prescriptions": "Prescription & Medications",
+      "addItem": "Add Prescription Item",
+      "medName": "Medication Name",
+      "dose": "Dose",
+      "frequency": "Frequency",
+      "duration": "Duration",
+      "instructions": "Instructions & Advice",
+      "templates": "Clinical & Prescription Templates",
+      "loadTemplate": "Load Clinical Protocol",
+      "saveAsTemplate": "Save As New Template",
+      "labs": "Laboratory Orders & Results",
+      "addLab": "Request Lab Test",
+      "notes": "Consultation Notes & Recommendations",
+      "followUpDate": "Next Follow-up Date",
+      "price": "Consultation Fee (EGP)",
+      "paid": "Payment Status",
+      "completeVisit": "Complete Consultation & Save Visit",
+      "completing": "Completing...",
+      "completedSuccess": "Consultation completed and visit saved successfully",
+      "printPrescription": "Print Prescription"
+    },
+    "print": {
+      "title": "Prescription Print & Preview",
+      "paperSize": "Paper Size",
+      "a4": "A4 Format (Standard)",
+      "a5": "A5 Format (Prescription Pad)",
+      "printButton": "Print Prescription Now",
+      "reprintButton": "Reprint Prescription",
+      "close": "Close Preview",
+      "auditNotice": "All printing and reprinting events are securely recorded in the audit trail.",
+      "printedSuccess": "Print job triggered and logged to audit trail.",
+      "reprintedSuccess": "Prescription reprinted and verified in audit log."
+    }
+  }
+}
