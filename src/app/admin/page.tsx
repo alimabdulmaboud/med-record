@@ -16,6 +16,9 @@ import {
   Check,
   AlertTriangle,
   Search,
+  CheckCircle2,
+  ExternalLink,
+  Info,
 } from "lucide-react";
 
 interface Clinic {
@@ -159,6 +162,7 @@ export default function AdminPage() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteClinicId, setInviteClinicId] = useState(clinics[0]?.id || "");
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [justCreatedInvite, setJustCreatedInvite] = useState<{ email: string; link: string } | null>(null);
 
   // 4. Audit Log State
   const [auditLogs, setAuditLogs] = useState<AuditItem[]>([
@@ -336,6 +340,8 @@ export default function AdminPage() {
 
     setInviteEmail("");
     setShowInviteModal(false);
+    const link = typeof window !== "undefined" ? `${window.location.origin}/invite/accept?token=${token}` : `/invite/accept?token=${token}`;
+    setJustCreatedInvite({ email: newInvite.email, link });
   };
 
   const handleRevokeInvite = (id: string) => {
@@ -701,6 +707,67 @@ export default function AdminPage() {
               <span>{t("admin.invitations.inviteOwner")}</span>
             </button>
           </div>
+
+          {/* Dev Environment Notice: Direct Links */}
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3 text-xs text-blue-900 leading-relaxed">
+            <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold text-sm text-blue-950 mb-1">
+                تنبيه بيئة التطوير (Localhost):
+              </p>
+              <p>
+                نظراً لعدم ربط مزود SMTP خارجي فعلي (مثل SendGrid أو AWS SES) في بيئة العمل المحلية، لا يتم إرسال إيميلات عبر الإنترنت إلى صندوق الوارد الخاص بك (Inbox). بدلاً من ذلك، يقوم النظام بتوليد <strong>رابط قبول الدعوة المباشر المشفر</strong>؛ يمكنك الضغط على زر <strong>"نسخ الرابط"</strong> بجوار أي دعوة لفتحه وتعيين كلمة المرور وتفعيل الحساب فوراً.
+              </p>
+            </div>
+          </div>
+
+          {/* Just Created Invite Link Modal */}
+          {justCreatedInvite && (
+            <div className="bg-emerald-50 border border-emerald-300 rounded-xl p-4 space-y-3 shadow-xs animate-in fade-in">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-emerald-900 font-bold text-sm">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                  <span>تم إصدار رابط الدعوة للمستخدم ({justCreatedInvite.email}) بنجاح!</span>
+                </div>
+                <button
+                  onClick={() => setJustCreatedInvite(null)}
+                  className="text-xs text-slate-400 hover:text-slate-600 font-bold"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <p className="text-xs text-emerald-800">
+                انسخ الرابط التالي أو افتحه مباشرة في المتصفح لإتمام التسجيل وقبول الدعوة:
+              </p>
+
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  dir="ltr"
+                  value={justCreatedInvite.link}
+                  className="text-xs font-mono bg-white border border-emerald-300 rounded-lg p-2.5 flex-1 select-all text-slate-800"
+                />
+                <button
+                  onClick={() => handleCopyInviteLink(justCreatedInvite.link.split("token=")[1])}
+                  className="inline-flex items-center justify-center gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-lg shadow-xs transition-colors shrink-0"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>نسخ الرابط</span>
+                </button>
+                <a
+                  href={justCreatedInvite.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-1.5 text-xs bg-white hover:bg-slate-50 text-emerald-800 border border-emerald-300 font-bold px-4 py-2.5 rounded-lg shadow-xs transition-colors shrink-0"
+                >
+                  <ExternalLink className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>فتح الرابط الآن</span>
+                </a>
+              </div>
+            </div>
+          )}
 
           {/* Invite Modal / Inline Form */}
           {showInviteModal && (
