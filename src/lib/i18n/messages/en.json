@@ -577,5 +577,25 @@
       "paid": "Collected",
       "unpaid": "Uncollected"
     }
+  },
+  "reminders": {
+    "title": "Appointment & Follow-up Reminders",
+    "subtitle": "Send and record daily appointment reminders for tomorrow (manual copy channel)",
+    "targetDate": "Target Appointment Date",
+    "tomorrow": "Tomorrow's Appointments",
+    "today": "Today's Appointments",
+    "totalReminders": "Total Appointments Due",
+    "pendingCount": "Pending",
+    "sentCount": "Reminded",
+    "appointment": "New Appointment",
+    "followUp": "Follow-up",
+    "copyMessage": "Copy Reminder Text",
+    "copied": "Copied to Clipboard!",
+    "markSent": "Mark as Reminded",
+    "sentSuccess": "Reminder recorded successfully",
+    "manualChannel": "Manual (Copy & Paste)",
+    "noReminders": "No appointments require reminders for this date",
+    "templates": "Reminder Templates",
+    "templateHelp": "Available variables: {patient_name}, {doctor_name}, {clinic_name}, {date}, {time}, {phone}, {address}"
   }
 }

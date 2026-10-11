@@ -40,6 +40,7 @@ import {
   Radio,
   FileCheck2,
 } from "lucide-react";
+import { RemindersWorkspace } from "@/components/reminders/RemindersWorkspace";
 
 interface SeedAppointment {
   id: string;
@@ -70,7 +71,7 @@ export default function ReceptionDashboardPage() {
   const [selectedDoctorFilter, setSelectedDoctorFilter] = useState<string>("all");
 
   // Active tab
-  const [activeTab, setActiveTab] = useState<"queue" | "appointments" | "alerts">("queue");
+  const [activeTab, setActiveTab] = useState<"queue" | "appointments" | "reminders" | "alerts">("queue");
 
   // Seed doctors for the clinic
   const clinicDoctors = [
@@ -761,6 +762,21 @@ export default function ReceptionDashboardPage() {
                 {appointments.filter((a) => a.status === "booked").length}
               </span>
             </button>
+
+            <button
+              onClick={() => setActiveTab("reminders")}
+              className={`px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all min-h-[40px] flex items-center gap-1.5 ${
+                activeTab === "reminders"
+                  ? "bg-white text-blue-600 shadow-sm"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <Bell className="w-4 h-4" />
+              <span>{t("reminders.title")}</span>
+              <span className="bg-amber-100 text-amber-800 text-[11px] px-2 py-0.5 rounded-full font-bold">
+                غداً
+              </span>
+            </button>
           </div>
 
           {/* Doctor Filter Dropdown */}
@@ -1063,6 +1079,13 @@ export default function ReceptionDashboardPage() {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* TAB 3: Reminders Workspace (Phase 14) */}
+        {activeTab === "reminders" && (
+          <div className="animate-in fade-in">
+            <RemindersWorkspace />
           </div>
         )}
       </div>

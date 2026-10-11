@@ -577,5 +577,25 @@
       "paid": "المحصل",
       "unpaid": "غير المحصل"
     }
+  },
+  "reminders": {
+    "title": "تذكيرات المواعيد والاستشارات",
+    "subtitle": "إرسال وتوثيق رسائل التذكير لمواعيد الغد والمتابعات الدورية (قناة يدوية)",
+    "targetDate": "تاريخ المواعيد المستهدفة",
+    "tomorrow": "مواعيد الغد",
+    "today": "مواعيد اليوم",
+    "totalReminders": "إجمالي المواعيد المطلوب تذكيرها",
+    "pendingCount": "بانتظار التذكير",
+    "sentCount": "تم التذكير بنجاح",
+    "appointment": "كشف جديد",
+    "followUp": "استشارة ومتابعة",
+    "copyMessage": "نسخ نص التذكير",
+    "copied": "تم النسخ للحافظة!",
+    "markSent": "تسجيل كـ تم التذكير",
+    "sentSuccess": "تم تسجيل التذكير بنجاح",
+    "manualChannel": "يدوي (نسخ ولصق)",
+    "noReminders": "لا توجد مواعيد تتطلب التذكير في هذا التاريخ",
+    "templates": "قوالب رسائل التذكير",
+    "templateHelp": "المتغيرات المتاحة: {patient_name}، {doctor_name}، {clinic_name}، {date}، {time}، {phone}، {address}"
   }
 }
