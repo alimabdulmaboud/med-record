@@ -10,3 +10,4 @@ test-results
 *.tsbuildinfo
 .DS_Store
 Thumbs.db
+data/*.json
