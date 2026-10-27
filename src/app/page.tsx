@@ -1,617 +1,200 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import React, { useState } from "react";
+import Link from "next/link";
 import {
-  Activity,
-  FileText,
-  Pill,
-  Calendar,
-  Syringe,
-  Plus,
-  ArrowLeft,
-  Clock,
-  TrendingUp,
-  AlertCircle,
-  CheckCircle2,
-  Share2,
-  FileSpreadsheet,
-  Download,
-  ShieldCheck,
-  Baby,
+  Heart,
   Users,
+  Building2,
+  ShieldCheck,
+  ArrowLeft,
   Sparkles,
   Stethoscope,
-} from 'lucide-react';
-import { Header } from '@/components/med-record/Header';
-import { EmergencyBanner } from '@/components/med-record/EmergencyBanner';
-import { QuickLogModal } from '@/components/med-record/QuickLogModal';
-import { SymptomTriageModal } from '@/components/med-record/SymptomTriageModal';
-import { getMedRecordRepository } from '@/lib/med-record/repository';
-import type {
-  FamilyMember,
-  Measurement,
-  GrowthMeasurement,
-  Medication,
-  MedicalDocument,
-  Encounter,
-  Vaccination,
-  MeasurementType,
-  MeasurementValues,
-} from '@/types/med-record';
-import { formatMeasurementValue } from '@/lib/med-record/quick-log-helper';
-import { evaluateVitalMeasurement } from '@/lib/med-record/vitals-evaluator';
+  FileText,
+  Lock,
+  Globe,
+} from "lucide-react";
 
-export default function MedRecordDashboard() {
-  const [members, setMembers] = useState<FamilyMember[]>([]);
-  const [activeMemberId, setActiveMemberId] = useState<string>('');
-  const [measurements, setMeasurements] = useState<Measurement[]>([]);
-  const [growthList, setGrowthList] = useState<GrowthMeasurement[]>([]);
-  const [medications, setMedications] = useState<Medication[]>([]);
-  const [documents, setDocuments] = useState<MedicalDocument[]>([]);
-  const [encounters, setEncounters] = useState<Encounter[]>([]);
-  const [vaccinations, setVaccinations] = useState<Vaccination[]>([]);
+export default function EntryScreen() {
+  const [lang, setLang] = useState<"ar" | "en">("ar");
 
-  const [isQuickLogOpen, setIsQuickLogOpen] = useState(false);
-  const [isTriageOpen, setIsTriageOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isMock, setIsMock] = useState(true);
-
-  const repo = getMedRecordRepository();
-
-  useEffect(() => {
-    async function loadInitialData() {
-      setIsLoading(true);
-      setIsMock(repo.isMockDataActive());
-      const allMembers = await repo.getFamilyMembers();
-      setMembers(allMembers);
-      if (allMembers.length > 0) {
-        const primary = allMembers.find(m => m.isPrimary) || allMembers[0];
-        setActiveMemberId(primary.id);
-        await loadMemberData(primary.id);
-      } else {
-        setActiveMemberId('');
-      }
-      setIsLoading(false);
-    }
-    loadInitialData();
-  }, []);
-
-  const handleClearMock = async () => {
-    if (window.confirm('هل أنت متأكد من رغبتك في مسح البيانات التجريبية والبدء بسجل حقيقي فارغ؟')) {
-      await repo.clearAllMockData();
-      setIsMock(false);
-      setMembers([]);
-      setActiveMemberId('');
-      setMeasurements([]);
-      setGrowthList([]);
-      setMedications([]);
-      setDocuments([]);
-      setEncounters([]);
-      setVaccinations([]);
-    }
+  const toggleLanguage = () => {
+    setLang(lang === "ar" ? "en" : "ar");
   };
 
-  const handleRestoreMock = async () => {
-    await repo.resetToMockData();
-    setIsMock(true);
-    const allMembers = await repo.getFamilyMembers();
-    setMembers(allMembers);
-    if (allMembers.length > 0) {
-      const primary = allMembers.find(m => m.isPrimary) || allMembers[0];
-      setActiveMemberId(primary.id);
-      await loadMemberData(primary.id);
-    }
-  };
-
-  const loadMemberData = async (memberId: string) => {
-    const [m, g, meds, docs, encs, vacs] = await Promise.all([
-      repo.getMeasurements(memberId),
-      repo.getGrowthMeasurements(memberId),
-      repo.getMedications(memberId, 'active'),
-      repo.getDocuments(memberId),
-      repo.getEncounters(memberId),
-      repo.getVaccinations(memberId),
-    ]);
-    setMeasurements(m);
-    setGrowthList(g);
-    setMedications(meds);
-    setDocuments(docs);
-    setEncounters(encs);
-    setVaccinations(vacs);
-  };
-
-  const handleSelectMember = async (id: string) => {
-    setActiveMemberId(id);
-    await loadMemberData(id);
-  };
-
-  const handleSaveQuickMeasurement = async (
-    type: MeasurementType,
-    values: MeasurementValues,
-    notes?: string
-  ) => {
-    await repo.addMeasurement({
-      memberId: activeMemberId,
-      measurementType: type,
-      values,
-      unit: type === 'blood_pressure' ? 'mmHg' : type === 'blood_sugar' ? (values.context === 'hba1c' ? '%' : 'mg/dL') : 'unit',
-      notes,
-      recordedAt: new Date().toISOString(),
-    });
-    await loadMemberData(activeMemberId);
-  };
-
-  const activeMember = members.find(m => m.id === activeMemberId) || members[0];
-  const isChild = activeMember?.relationship === 'child';
-
-  // Latest measurements by type
-  const getLatestMeasurement = (type: MeasurementType) => {
-    const filtered = measurements.filter(m => m.measurementType === type);
-    return filtered.length > 0 ? filtered[filtered.length - 1] : null;
-  };
-
-  const latestBP = getLatestMeasurement('blood_pressure');
-  const latestSugar = getLatestMeasurement('blood_sugar');
-  const latestHR = getLatestMeasurement('heart_rate');
-  const latestSpO2 = getLatestMeasurement('oxygen_saturation');
-  const latestTemp = getLatestMeasurement('temperature');
-  const latestWeight = getLatestMeasurement('weight');
+  const isAr = lang === "ar";
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 pb-20" dir="rtl">
-      {/* Top Header */}
-      <Header
-        members={members}
-        activeMemberId={activeMemberId}
-        onSelectMember={handleSelectMember}
-        onAddMember={() => window.location.href = '/profiles'}
-      />
-
-      {/* Main Container */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* Mock Data Notice Banner */}
-        {isMock && (
-          <div className="bg-amber-500/10 border border-amber-500/30 p-3 sm:p-4 rounded-3xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs animate-in fade-in">
-            <div className="flex items-center gap-2.5 text-amber-950 font-bold">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0 animate-ping" />
-              <span>
-                أنت تشاهد حالياً بيانات تجريبية وهمية (أحمد، سارة، ياسين). يمكنك مسحها والبدء بسجلك وسجلات أسرتك الحقيقية المحفوظة دائماً.
+    <div
+      className="min-h-screen bg-gradient-to-b from-slate-50 via-teal-50/20 to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-900 dark:text-slate-100 flex flex-col justify-between"
+      dir={isAr ? "rtl" : "ltr"}
+    >
+      {/* Top Bar */}
+      <header className="px-6 py-4 flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-teal-600 flex items-center justify-center text-white shadow-md shadow-teal-600/20 font-black text-xl">
+            M
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-extrabold text-lg md:text-xl tracking-tight text-teal-950 dark:text-teal-100">
+                {isAr ? "ميد" : "Med"}
+              </span>
+              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950 text-teal-800 dark:text-teal-300">
+                Phase 1
               </span>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                onClick={handleClearMock}
-                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-black text-xs transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
-              >
-                <span>مسح البيانات التجريبية والبدء الآن</span>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Empty State when no members exist */}
-        {members.length === 0 ? (
-          <div className="bg-white rounded-3xl p-8 sm:p-12 border border-slate-200/80 text-center space-y-4 max-w-xl mx-auto shadow-sm my-8">
-            <div className="w-16 h-16 rounded-3xl bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
-              <Users className="w-8 h-8" />
-            </div>
-            <h2 className="text-lg font-black text-slate-900">سجلك الطبي جاهز للاستخدام!</h2>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              تم إفراغ البيانات التجريبية. ابدأ الآن بإضافة ملفك الشخصي أو ملف أحد أفراد أسرتك (أطفالك، زوجتك، والديك). أي بيانات تسجلها تُحفظ بشكل دائم ولن تختفي أبداً.
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              {isAr
+                ? "منظومة السجلات الصحية للعائلة والعيادات"
+                : "Health Records System for Families & Clinics"}
             </p>
-            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2.5">
-              <Link
-                href="/profiles"
-                className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-black shadow-md shadow-emerald-600/20"
-              >
-                + إضافة أول ملف شخصي (صاحب الحساب)
-              </Link>
-              <button
-                onClick={handleRestoreMock}
-                className="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl text-xs font-bold transition-colors cursor-pointer"
-              >
-                استعادة البيانات التجريبية
-              </button>
-            </div>
           </div>
-        ) : (
-          <>
-            {/* Emergency Info Banner */}
-            {activeMember && <EmergencyBanner member={activeMember} />}
-
-            {/* AI Symptom Checker & Triage Banner */}
-            <div className="bg-linear-to-r from-teal-950 via-slate-900 to-emerald-950 text-white rounded-3xl p-4 sm:p-5 shadow-md border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in">
-              <div className="flex items-start sm:items-center gap-3.5">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0 shadow-inner">
-                  <Sparkles className="w-6 h-6 animate-pulse" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-sm sm:text-base font-black text-white">
-                      حاسس بتعب أو ألم في جسمك؟
-                    </h3>
-                    <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-                      مساعد الفحص وتوجيه التخصصات
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-300 mt-1 max-w-xl leading-relaxed">
-                    اكتب ما تشعر به لـ <span className="text-white font-bold">{activeMember?.fullName}</span>، وسيطرح عليك المساعد أسئلة متابعة لتحديد التخصص الطبي الأنسب والاحتمالات المبدئية وحفظها في سجلك الطبي.
-                  </p>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setIsTriageOpen(true)}
-                className="px-5 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black text-xs shadow-md shadow-emerald-600/30 transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer group"
-              >
-                <Stethoscope className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                <span>فحص الأعراض الآن</span>
-              </button>
-            </div>
-
-            {/* Quick Action Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <button
-            onClick={() => setIsQuickLogOpen(true)}
-            className="flex items-center gap-3 p-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl shadow-md shadow-emerald-600/20 transition-all text-right group cursor-pointer"
-          >
-            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-              <Plus className="w-6 h-6" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-emerald-100">تسجيل سريع</div>
-              <div className="text-sm font-black">قياس جديد</div>
-            </div>
-          </button>
-
-          <Link
-            href="/documents"
-            className="flex items-center gap-3 p-4 bg-white hover:bg-slate-50 text-slate-800 rounded-2xl border border-slate-200/80 shadow-xs transition-all text-right group"
-          >
-            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-              <FileText className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-slate-400">خزينة الملفات</div>
-              <div className="text-sm font-black text-slate-900">رفع وثيقة / تحليل</div>
-            </div>
-          </Link>
-
-          <Link
-            href="/visits"
-            className="flex items-center gap-3 p-4 bg-white hover:bg-slate-50 text-slate-800 rounded-2xl border border-slate-200/80 shadow-xs transition-all text-right group"
-          >
-            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-              <Calendar className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-slate-400">سجل الاستشارات</div>
-              <div className="text-sm font-black text-slate-900">زيارة طبيب</div>
-            </div>
-          </Link>
-
-          <Link
-            href="/report"
-            className="flex items-center gap-3 p-4 bg-white hover:bg-slate-50 text-slate-800 rounded-2xl border border-slate-200/80 shadow-xs transition-all text-right group"
-          >
-            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-              <FileSpreadsheet className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-slate-400">ملخص الزيارة</div>
-              <div className="text-sm font-black text-slate-900">تقرير الطبيب</div>
-            </div>
-          </Link>
         </div>
 
-        {/* Vitals Overview Section */}
-        <section className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-black text-slate-900 flex items-center gap-2">
-              <Activity className="w-5 h-5 text-emerald-600" />
-              <span>القياسات والمؤشرات الحيوية ({activeMember?.fullName})</span>
-            </h2>
-            <Link
-              href="/measurements"
-              className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1"
-            >
-              <span>عرض المخططات والتاريخ</span>
-              <ArrowLeft className="w-3.5 h-3.5" />
-            </Link>
+        <button
+          type="button"
+          onClick={toggleLanguage}
+          className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm"
+        >
+          <Globe className="w-3.5 h-3.5 text-teal-600" />
+          <span>{isAr ? "English" : "العربية"}</span>
+        </button>
+      </header>
+
+      {/* Main Choice Section */}
+      <main className="max-w-4xl w-full mx-auto px-4 py-8 md:py-16 flex-1 flex flex-col justify-center">
+        <div className="text-center max-w-2xl mx-auto mb-10 md:mb-12">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-100/80 dark:bg-teal-950/80 text-teal-800 dark:text-teal-200 text-xs font-bold mb-3 border border-teal-200 dark:border-teal-800">
+            <Sparkles className="w-3.5 h-3.5 text-teal-600" />
+            <span>{isAr ? "مرحباً بك في منصة Med" : "Welcome to Med Platform"}</span>
           </div>
+          <h1 className="text-2xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-3">
+            {isAr
+              ? "اختر مسار الدخول المناسب لك"
+              : "Choose your path to enter"}
+          </h1>
+          <p className="text-sm md:text-base text-slate-600 dark:text-slate-400 leading-relaxed">
+            {isAr
+              ? "نوفر فضاءً خاصاً بالعائلات لحفظ ومتابعة السجلات الصحية، وبوابة مغلقة مخصصة للكوادر الطبية والعيادات."
+              : "We provide a private space for families to track health records, and an invitation-only gateway for clinics."}
+          </p>
+        </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-            {/* Blood Pressure Card */}
-            <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
-                <span>ضغط الدم</span>
-                <Activity className="w-4 h-4 text-rose-500" />
+        {/* The Two Worlds Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+          
+          {/* 1. Regular User / Family Space */}
+          <div className="relative group bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-8 border-2 border-teal-500/30 hover:border-teal-500 shadow-xl shadow-teal-500/5 transition-all flex flex-col justify-between">
+            <div>
+              <div className="w-14 h-14 rounded-2xl bg-teal-500/10 dark:bg-teal-500/20 text-teal-600 dark:text-teal-400 flex items-center justify-center mb-5 group-hover:scale-105 transition-transform">
+                <Users className="w-7 h-7" />
               </div>
-              <div className="text-lg font-black text-slate-900">
-                {latestBP ? `${latestBP.values.systolic}/${latestBP.values.diastolic}` : '--'}
-                <span className="text-[10px] text-slate-400 font-normal mr-1">mmHg</span>
-              </div>
-              <div className="mt-2 text-[10px]">
-                {latestBP ? (
-                  <span
-                    className={`px-2 py-0.5 rounded-full font-bold ${
-                      latestBP.isAbnormal
-                        ? 'bg-rose-50 text-rose-700 border border-rose-200'
-                        : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                    }`}
-                  >
-                    {latestBP.isAbnormal ? 'مرتفع' : 'طبيعي'}
-                  </span>
-                ) : (
-                  <span className="text-slate-400">لا توجد قراءة</span>
-                )}
-              </div>
-            </div>
-
-            {/* Blood Sugar Card */}
-            <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
-                <span>السكر بالدم</span>
-                <Activity className="w-4 h-4 text-amber-500" />
-              </div>
-              <div className="text-lg font-black text-slate-900">
-                {latestSugar ? (latestSugar.values.glucose ?? latestSugar.values.value) : '--'}
-                <span className="text-[10px] text-slate-400 font-normal mr-1">
-                  {latestSugar?.values.context === 'hba1c' ? '%' : 'mg/dL'}
+              <div className="flex items-center gap-2 mb-2">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                  {isAr ? "مستخدم عادي (فضاء العائلة)" : "Regular User (Family Space)"}
+                </h2>
+                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
+                  {isAr ? "تسجيل متاح" : "Open Signup"}
                 </span>
               </div>
-              <div className="mt-2 text-[10px]">
-                {latestSugar ? (
-                  <span className="px-2 py-0.5 rounded-full font-bold bg-slate-100 text-slate-700">
-                    {latestSugar.values.context === 'fasting'
-                      ? 'صائم'
-                      : latestSugar.values.context === 'post_prandial'
-                      ? 'بعد الأكل'
-                      : 'عشوائي'}
-                  </span>
-                ) : (
-                  <span className="text-slate-400">لا توجد قراءة</span>
-                )}
+              <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
+                {isAr
+                  ? "سجل حسابك مجاناً لتسجيل ومتابعة صحتك وصحة أطفالك: القياسات الحيوية، الحساسية، والأمراض المزمنة، مع أمان تام وعزل لبياناتك."
+                  : "Register for free to track your family and children's vitals, allergies, and chronic conditions with complete privacy and data isolation."}
+              </p>
+
+              <div className="space-y-2 mb-8 text-xs text-slate-600 dark:text-slate-300">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-teal-600" />
+                  <span>{isAr ? "عزل مشدد لبيانات العائلة بقواعد RLS" : "Strict family tenant isolation"}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-teal-600" />
+                  <span>{isAr ? "متابعة أفراد الأسرة وإضافة بيانات الطوارئ" : "Emergency contacts & child profiles"}</span>
+                </div>
               </div>
             </div>
 
-            {/* Heart Rate Card */}
-            <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
-                <span>النبض</span>
-                <Activity className="w-4 h-4 text-red-500" />
+            <div className="space-y-3">
+              <Link
+                href="/signup"
+                className="w-full py-3 px-4 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm shadow-md shadow-teal-600/20 flex items-center justify-center gap-2 transition-all"
+              >
+                <span>{isAr ? "إنشاء حساب عائلي جديد" : "Create Family Account"}</span>
+                <ArrowLeft className={`w-4 h-4 ${isAr ? "" : "rotate-180"}`} />
+              </Link>
+              <Link
+                href="/login"
+                className="w-full py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60 font-semibold text-xs text-slate-700 dark:text-slate-300 flex items-center justify-center transition-colors"
+              >
+                <span>{isAr ? "لدي حساب بالفعل · تسجيل الدخول" : "Already have an account · Sign In"}</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* 2. Health-system Party / Clinics Gateway */}
+          <div className="relative group bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-8 border border-slate-200 dark:border-slate-800 hover:border-slate-400 shadow-sm transition-all flex flex-col justify-between">
+            <div>
+              <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-5 group-hover:scale-105 transition-transform">
+                <Building2 className="w-7 h-7" />
               </div>
-              <div className="text-lg font-black text-slate-900">
-                {latestHR ? latestHR.values.value : '--'}
-                <span className="text-[10px] text-slate-400 font-normal mr-1">bpm</span>
+              <div className="flex items-center gap-2 mb-2">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                  {isAr ? "طرف في منظومة صحية" : "Health-System Party"}
+                </h2>
+                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                  {isAr ? "بدعوة فقط" : "Invitation Only"}
+                </span>
               </div>
-              <div className="mt-2 text-[10px] text-slate-500">
-                المعدل: 60-100
+              <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
+                {isAr
+                  ? "بوابة مخصصة للعيادات والمراكز الصحية (المدير، الطبيب، وموظف الاستقبال) لإدارة الحجوزات والطابور والكشوفات الطبية."
+                  : "Dedicated gateway for clinic staff (managers, doctors, receptionists) to manage visits, queues, and clinical workflows."}
+              </p>
+
+              <div className="space-y-2 mb-8 text-xs text-slate-600 dark:text-slate-300">
+                <div className="flex items-center gap-2">
+                  <Lock className="w-4 h-4 text-indigo-600" />
+                  <span>{isAr ? "الدخول حصري بالدعوات المعتمدة فقط" : "Access strictly via authorized invites"}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Lock className="w-4 h-4 text-indigo-600" />
+                  <span>{isAr ? "فصل كامل ومستقل عن سجلات العائلات" : "Completely separate from family records"}</span>
+                </div>
               </div>
             </div>
 
-            {/* SpO2 Card */}
-            <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
-                <span>الأكسجين SpO2</span>
-                <Activity className="w-4 h-4 text-sky-500" />
-              </div>
-              <div className="text-lg font-black text-slate-900">
-                {latestSpO2 ? latestSpO2.values.value : '--'}
-                <span className="text-[10px] text-slate-400 font-normal mr-1">%</span>
-              </div>
-              <div className="mt-2 text-[10px] text-emerald-700 font-bold">
-                {latestSpO2 && latestSpO2.values.value! >= 95 ? 'نسبة ممتازة' : ''}
-              </div>
-            </div>
-
-            {/* Temperature Card */}
-            <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
-                <span>الحرارة</span>
-                <Activity className="w-4 h-4 text-orange-500" />
-              </div>
-              <div className="text-lg font-black text-slate-900">
-                {latestTemp ? latestTemp.values.value : '--'}
-                <span className="text-[10px] text-slate-400 font-normal mr-1">°C</span>
-              </div>
-              <div className="mt-2 text-[10px] text-slate-500">
-                طبيعي: 36.5 - 37.5
-              </div>
-            </div>
-
-            {/* Weight Card */}
-            <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
-                <span>الوزن</span>
-                <Activity className="w-4 h-4 text-indigo-500" />
-              </div>
-              <div className="text-lg font-black text-slate-900">
-                {latestWeight ? latestWeight.values.value : '--'}
-                <span className="text-[10px] text-slate-400 font-normal mr-1">kg</span>
-              </div>
-              <div className="mt-2 text-[10px] text-slate-500">
-                {isChild ? 'متابع في منحنى WHO' : 'كتلة الجسم'}
+            <div>
+              <Link
+                href="/clinic"
+                className="w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white font-bold text-sm shadow-sm flex items-center justify-center gap-2 transition-all"
+              >
+                <span>{isAr ? "الدخول كفريق عيادة أو مركز" : "Enter Clinic Gateway"}</span>
+                <ArrowLeft className={`w-4 h-4 ${isAr ? "" : "rotate-180"}`} />
+              </Link>
+              <div className="text-center text-[11px] text-slate-400 dark:text-slate-500 mt-3">
+                {isAr ? "لا يوجد تسجيل ذاتي لموظفي العيادات" : "No self-signup for clinic staff"}
               </div>
             </div>
           </div>
-        </section>
 
-        {/* 2-Column Section: Active Medications & Recent Documents */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Active Medications */}
-          <section className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                  <Pill className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-black text-slate-900">الأدوية والعلاجات الحالية</h3>
-                  <p className="text-[11px] text-slate-500">الجرعات ومواعيد التذكير</p>
-                </div>
-              </div>
-              <Link
-                href="/medications"
-                className="text-xs font-bold text-emerald-700 hover:text-emerald-800"
-              >
-                إدارة الأدوية
-              </Link>
-            </div>
-
-            {medications.length === 0 ? (
-              <div className="py-8 text-center text-slate-400 text-xs">
-                لا توجد أدوية نشطة مسجلة حالياً
-              </div>
-            ) : (
-              <div className="space-y-2.5">
-                {medications.map(med => (
-                  <div
-                    key={med.id}
-                    className="p-3 rounded-xl bg-slate-50 border border-slate-200/60 flex items-center justify-between"
-                  >
-                    <div>
-                      <div className="text-xs font-bold text-slate-900">{med.name}</div>
-                      <div className="text-[11px] text-slate-600 mt-0.5">
-                        {med.dose} • {med.frequency}
-                      </div>
-                      {med.timingNotes && (
-                        <div className="text-[10px] text-slate-400 mt-0.5">{med.timingNotes}</div>
-                      )}
-                    </div>
-                    {med.reminderEnabled && med.reminderTime && (
-                      <span className="flex items-center gap-1 text-[11px] px-2 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 font-mono">
-                        <Clock className="w-3 h-3 text-emerald-600" />
-                        <span>{med.reminderTime}</span>
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-
-          {/* Recent Documents & Labs */}
-          <section className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-                  <FileText className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-black text-slate-900">أحدث الوثائق والتحاليل</h3>
-                  <p className="text-[11px] text-slate-500">تقارير المعامل والأشعة والروشتات</p>
-                </div>
-              </div>
-              <Link
-                href="/documents"
-                className="text-xs font-bold text-blue-700 hover:text-blue-800"
-              >
-                فتح الخزينة
-              </Link>
-            </div>
-
-            {documents.length === 0 ? (
-              <div className="py-8 text-center text-slate-400 text-xs">
-                لم يتم رفع أي وثائق طبية بعد
-              </div>
-            ) : (
-              <div className="space-y-2.5">
-                {documents.slice(0, 3).map(doc => (
-                  <div
-                    key={doc.id}
-                    className="p-3 rounded-xl bg-slate-50 border border-slate-200/60 flex items-center justify-between"
-                  >
-                    <div>
-                      <div className="text-xs font-bold text-slate-900">{doc.title}</div>
-                      <div className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-2">
-                        <span>{doc.documentDate}</span>
-                        {doc.doctorName && <span>• {doc.doctorName}</span>}
-                      </div>
-                      {doc.tags && doc.tags.length > 0 && (
-                        <div className="flex items-center gap-1 mt-1">
-                          {doc.tags.slice(0, 3).map((tag, i) => (
-                            <span key={i} className="text-[9px] px-1.5 py-0.2 rounded-md bg-white border text-slate-600">
-                              #{tag}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <span className="text-[10px] px-2 py-1 rounded-lg bg-blue-100 text-blue-800 font-bold">
-                      {doc.documentType === 'lab_result' ? 'تحليل' : doc.documentType === 'radiology' ? 'أشعة' : 'روشتة'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
         </div>
 
-        {/* Pediatric Vaccination Tracker Preview (if active member is a child) */}
-        {isChild && (
-          <section className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
-                  <Syringe className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-black text-slate-900">تطعيمات وزارة الصحة المصرية ({activeMember.fullName})</h3>
-                  <p className="text-[11px] text-slate-500">جدول التطعيمات الإجبارية الرسمية من الولادة حتى 18 شهراً</p>
-                </div>
-              </div>
-              <Link
-                href="/vaccinations"
-                className="text-xs font-bold text-purple-700 hover:text-purple-800"
-              >
-                جدول التطعيمات الكامل
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-              {vaccinations.slice(0, 3).map(vac => (
-                <div key={vac.id} className="p-3 bg-purple-50/50 border border-purple-100 rounded-xl">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-bold text-purple-950">{vac.vaccineName}</span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">
-                      تم التطعيم
-                    </span>
-                  </div>
-                  <div className="text-[10px] text-slate-500">
-                    تاريخ الإعطاء: {vac.administeredDate || vac.scheduledDate}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-        </>
-        )}
+        {/* Non-Diagnostic Tool Notice */}
+        <div className="mt-12 text-center max-w-xl mx-auto p-4 rounded-2xl bg-white/60 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80 backdrop-blur-sm">
+          <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+            {isAr
+              ? "ملاحظة هامة: تطبيق Med أداة لتوثيق وحفظ السجلات الصحية والمتابعة الشخصية وليست أداة تشخيص طبي أو بديلاً عن الاستشارة الطبية المتخصصة."
+              : "Important: Med is a personal health tracking and record-keeping tool, not a diagnostic tool or substitute for professional medical care."}
+          </p>
+        </div>
       </main>
 
-      {/* Quick Measurement Log Bottom Sheet Modal (< 10 seconds) */}
-      <QuickLogModal
-        isOpen={isQuickLogOpen}
-        memberId={activeMemberId}
-        memberName={activeMember?.fullName || ''}
-        isChild={isChild}
-        onClose={() => setIsQuickLogOpen(false)}
-        onSave={handleSaveQuickMeasurement}
-      />
-
-      {/* Symptom Triage Modal */}
-      <SymptomTriageModal
-        isOpen={isTriageOpen}
-        member={activeMember || null}
-        onClose={() => setIsTriageOpen(false)}
-        onAssessmentSaved={() => {
-          if (activeMemberId) {
-            loadMemberData(activeMemberId);
-          }
-        }}
-      />
+      {/* Footer */}
+      <footer className="py-4 text-center text-xs text-slate-400 dark:text-slate-600 border-t border-slate-200/60 dark:border-slate-800/60">
+        Med Health Platform · Phase 1: Family Space & Clinic Stub · 2026
+      </footer>
     </div>
   );
 }
