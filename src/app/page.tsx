@@ -19,6 +19,7 @@ import {
   Download,
   ShieldCheck,
   Baby,
+  Users,
 } from 'lucide-react';
 import { Header } from '@/components/med-record/Header';
 import { EmergencyBanner } from '@/components/med-record/EmergencyBanner';
@@ -50,23 +51,54 @@ export default function MedRecordDashboard() {
 
   const [isQuickLogOpen, setIsQuickLogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isMock, setIsMock] = useState(true);
 
   const repo = getMedRecordRepository();
 
   useEffect(() => {
     async function loadInitialData() {
       setIsLoading(true);
+      setIsMock(repo.isMockDataActive());
       const allMembers = await repo.getFamilyMembers();
       setMembers(allMembers);
       if (allMembers.length > 0) {
         const primary = allMembers.find(m => m.isPrimary) || allMembers[0];
         setActiveMemberId(primary.id);
         await loadMemberData(primary.id);
+      } else {
+        setActiveMemberId('');
       }
       setIsLoading(false);
     }
     loadInitialData();
   }, []);
+
+  const handleClearMock = async () => {
+    if (window.confirm('هل أنت متأكد من رغبتك في مسح البيانات التجريبية والبدء بسجل حقيقي فارغ؟')) {
+      await repo.clearAllMockData();
+      setIsMock(false);
+      setMembers([]);
+      setActiveMemberId('');
+      setMeasurements([]);
+      setGrowthList([]);
+      setMedications([]);
+      setDocuments([]);
+      setEncounters([]);
+      setVaccinations([]);
+    }
+  };
+
+  const handleRestoreMock = async () => {
+    await repo.resetToMockData();
+    setIsMock(true);
+    const allMembers = await repo.getFamilyMembers();
+    setMembers(allMembers);
+    if (allMembers.length > 0) {
+      const primary = allMembers.find(m => m.isPrimary) || allMembers[0];
+      setActiveMemberId(primary.id);
+      await loadMemberData(primary.id);
+    }
+  };
 
   const loadMemberData = async (memberId: string) => {
     const [m, g, meds, docs, encs, vacs] = await Promise.all([
@@ -134,10 +166,57 @@ export default function MedRecordDashboard() {
 
       {/* Main Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* Emergency Info Banner */}
-        {activeMember && <EmergencyBanner member={activeMember} />}
+        {/* Mock Data Notice Banner */}
+        {isMock && (
+          <div className="bg-amber-500/10 border border-amber-500/30 p-3 sm:p-4 rounded-3xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs animate-in fade-in">
+            <div className="flex items-center gap-2.5 text-amber-950 font-bold">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0 animate-ping" />
+              <span>
+                أنت تشاهد حالياً بيانات تجريبية وهمية (أحمد، سارة، ياسين). يمكنك مسحها والبدء بسجلك وسجلات أسرتك الحقيقية المحفوظة دائماً.
+              </span>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={handleClearMock}
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-black text-xs transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
+              >
+                <span>مسح البيانات التجريبية والبدء الآن</span>
+              </button>
+            </div>
+          </div>
+        )}
 
-        {/* Quick Action Grid */}
+        {/* Empty State when no members exist */}
+        {members.length === 0 ? (
+          <div className="bg-white rounded-3xl p-8 sm:p-12 border border-slate-200/80 text-center space-y-4 max-w-xl mx-auto shadow-sm my-8">
+            <div className="w-16 h-16 rounded-3xl bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
+              <Users className="w-8 h-8" />
+            </div>
+            <h2 className="text-lg font-black text-slate-900">سجلك الطبي جاهز للاستخدام!</h2>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              تم إفراغ البيانات التجريبية. ابدأ الآن بإضافة ملفك الشخصي أو ملف أحد أفراد أسرتك (أطفالك، زوجتك، والديك). أي بيانات تسجلها تُحفظ بشكل دائم ولن تختفي أبداً.
+            </p>
+            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2.5">
+              <Link
+                href="/profiles"
+                className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-black shadow-md shadow-emerald-600/20"
+              >
+                + إضافة أول ملف شخصي (صاحب الحساب)
+              </Link>
+              <button
+                onClick={handleRestoreMock}
+                className="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl text-xs font-bold transition-colors cursor-pointer"
+              >
+                استعادة البيانات التجريبية
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Emergency Info Banner */}
+            {activeMember && <EmergencyBanner member={activeMember} />}
+
+            {/* Quick Action Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <button
             onClick={() => setIsQuickLogOpen(true)}
@@ -473,6 +552,8 @@ export default function MedRecordDashboard() {
               ))}
             </div>
           </section>
+        )}
+        </>
         )}
       </main>
 

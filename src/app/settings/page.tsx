@@ -36,6 +36,7 @@ export default function SettingsPage() {
   const [showWipeModal, setShowWipeModal] = useState(false);
   const [wipeConfirmText, setWipeConfirmText] = useState('');
   const [exportSuccess, setExportSuccess] = useState<string | null>(null);
+  const [isMock, setIsMock] = useState(true);
 
   const repo = getMedRecordRepository();
 
@@ -44,12 +45,34 @@ export default function SettingsPage() {
   }, []);
 
   const loadMembers = async () => {
+    setIsMock(repo.isMockDataActive());
     const list = await repo.getFamilyMembers(DEMO_USER_ID);
     setMembers(list);
     if (list.length > 0) {
       const primary = list.find(m => m.isPrimary) || list[0];
       setActiveMemberId(primary.id);
+    } else {
+      setActiveMemberId('');
     }
+  };
+
+  const handleClearMock = async () => {
+    if (window.confirm('هل أنت متأكد من رغبتك في مسح كافة البيانات التجريبية والبدء بسجل حقيقي فارغ؟')) {
+      await repo.clearAllMockData();
+      setIsMock(false);
+      setMembers([]);
+      setActiveMemberId('');
+      setExportSuccess('تم مسح البيانات التجريبية بنجاح! يمكنك الآن إضافة ملفاتك الحقيقية.');
+      setTimeout(() => setExportSuccess(null), 4000);
+    }
+  };
+
+  const handleRestoreMock = async () => {
+    await repo.resetToMockData();
+    setIsMock(true);
+    await loadMembers();
+    setExportSuccess('تمت استعادة البيانات التجريبية بنجاح.');
+    setTimeout(() => setExportSuccess(null), 3000);
   };
 
   const handleDownloadFile = (content: string, filename: string, mimeType: string) => {
@@ -168,6 +191,50 @@ export default function SettingsPage() {
             <span>{exportSuccess}</span>
           </div>
         )}
+
+        {/* Demo Data Management Card */}
+        <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="flex items-center gap-2 text-slate-900 font-black text-sm">
+              <HardDriveDownload className="w-4 h-4 text-emerald-600" />
+              <span>إدارة البيانات التجريبية والتخزين الدائم (Data Storage Mode)</span>
+            </div>
+            <span
+              className={`px-3 py-1 rounded-full text-xs font-bold ${
+                isMock
+                  ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                  : 'bg-emerald-100 text-emerald-900 border border-emerald-300'
+              }`}
+            >
+              {isMock ? 'بيانات تجريبية (أحمد، سارة، ياسين)' : 'سجلك الطبي الحقيقي (محفوظ دائماً)'}
+            </span>
+          </div>
+
+          <p className="text-xs text-slate-600 leading-relaxed">
+            {isMock
+              ? 'أنت تتصفح حالياً البيانات التجريبية للتعرف على وظائف النظام. يمكنك بضغطة واحدة مسح هذه البيانات والبدء بسجلك الحقيقي. كل ما تدخله بعد ذلك يُحفظ بشكل دائم في المتصفح وعلى القرص.'
+              : 'النظام حالياً في وضع السجل الحقيقي. كافة الفحوصات والقياسات وأفراد الأسرة الذين تضيفهم يتم حفظهم واسترجاعهم تلقائياً في أي وقت.'}
+          </p>
+
+          <div className="flex flex-wrap items-center gap-3 pt-1">
+            {isMock ? (
+              <button
+                onClick={handleClearMock}
+                className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-black transition-all shadow-sm cursor-pointer flex items-center gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>مسح البيانات التجريبية والبدء بسجل حقيقي فارغ</span>
+              </button>
+            ) : (
+              <button
+                onClick={handleRestoreMock}
+                className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer"
+              >
+                استعادة البيانات التجريبية للتجربة
+              </button>
+            )}
+          </div>
+        </div>
 
         {/* Section 1: Data Sovereignty & Export */}
         <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-4">

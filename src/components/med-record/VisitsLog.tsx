@@ -23,6 +23,7 @@ interface VisitsLogProps {
   memberName: string;
   encounters: Encounter[];
   onAddEncounter: (enc: Omit<Encounter, 'id' | 'createdAt'>) => Promise<void>;
+  onDeleteEncounter?: (id: string) => Promise<void>;
 }
 
 export function VisitsLog({
@@ -30,6 +31,7 @@ export function VisitsLog({
   memberName,
   encounters,
   onAddEncounter,
+  onDeleteEncounter,
 }: VisitsLogProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -152,21 +154,37 @@ export function VisitsLog({
                     </div>
                   </div>
 
-                  {/* Follow-up alert badge */}
-                  {followUpAlert.hasFollowUp && (
-                    <div
-                      className={`text-xs px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5 self-start sm:self-auto border ${
-                        followUpAlert.isOverdue
-                          ? 'bg-rose-50 text-rose-800 border-rose-200'
-                          : followUpAlert.isDueSoon
-                          ? 'bg-amber-50 text-amber-800 border-amber-200 animate-pulse'
-                          : 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                      }`}
-                    >
-                      <Clock className="w-3.5 h-3.5" />
-                      <span>موعد الاستشارة: {followUpAlert.followUpDate} ({followUpAlert.badgeLabelAr || 'محدد'})</span>
-                    </div>
-                  )}
+                  {/* Follow-up alert badge & Delete Action */}
+                  <div className="flex items-center gap-2 self-start sm:self-auto">
+                    {followUpAlert.hasFollowUp && (
+                      <div
+                        className={`text-xs px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5 border ${
+                          followUpAlert.isOverdue
+                            ? 'bg-rose-50 text-rose-800 border-rose-200'
+                            : followUpAlert.isDueSoon
+                            ? 'bg-amber-50 text-amber-800 border-amber-200 animate-pulse'
+                            : 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                        }`}
+                      >
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>موعد الاستشارة: {followUpAlert.followUpDate} ({followUpAlert.badgeLabelAr || 'محدد'})</span>
+                      </div>
+                    )}
+
+                    {onDeleteEncounter && (
+                      <button
+                        onClick={() => {
+                          if (window.confirm('هل أنت متأكد من حذف هذه الاستشارة؟')) {
+                            onDeleteEncounter(enc.id);
+                          }
+                        }}
+                        className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
+                        title="حذف الاستشارة"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Complaint & Diagnosis */}

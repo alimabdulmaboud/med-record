@@ -13,6 +13,7 @@ import {
   AlertCircle,
   Bell,
   BellOff,
+  Trash2,
 } from 'lucide-react';
 import type { Medication, MedicationStatus } from '@/types/med-record';
 import { formatMedicationSchedule } from '@/lib/med-record/medications-visits-helper';
@@ -23,6 +24,7 @@ interface MedicationsManagerProps {
   medications: Medication[];
   onAddMedication: (med: Omit<Medication, 'id' | 'createdAt'>) => Promise<void>;
   onUpdateStatus: (id: string, status: MedicationStatus) => Promise<void>;
+  onDeleteMedication?: (id: string) => Promise<void>;
 }
 
 export function MedicationsManager({
@@ -31,6 +33,7 @@ export function MedicationsManager({
   medications,
   onAddMedication,
   onUpdateStatus,
+  onDeleteMedication,
 }: MedicationsManagerProps) {
   const [filterStatus, setFilterStatus] = useState<MedicationStatus | 'all'>('active');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -212,6 +215,20 @@ export function MedicationsManager({
                       className="text-[11px] font-bold text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-3 py-1 rounded-lg transition-colors"
                     >
                       إعادة تفعيل الدواء
+                    </button>
+                  )}
+
+                  {onDeleteMedication && (
+                    <button
+                      onClick={() => {
+                        if (window.confirm(`هل أنت متأكد من حذف دواء "${med.name}"؟`)) {
+                          onDeleteMedication(med.id);
+                        }
+                      }}
+                      className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer mr-auto"
+                      title="حذف الدواء"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   )}
                 </div>

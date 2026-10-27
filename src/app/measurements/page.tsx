@@ -71,6 +71,13 @@ export default function MeasurementsPage() {
     await loadMemberMeasurements(id);
   };
 
+  const handleDeleteMeasurement = async (id: string) => {
+    if (window.confirm('هل أنت متأكد من حذف هذا القياس؟')) {
+      await repo.deleteMeasurement(id);
+      await loadMemberMeasurements(activeMemberId);
+    }
+  };
+
   const handleSaveMeasurement = async (
     type: MeasurementType,
     values: MeasurementValues,
@@ -222,15 +229,25 @@ export default function MeasurementsPage() {
                           </div>
                         </div>
 
-                        <span
-                          className={`text-xs px-2.5 py-1 rounded-full font-bold border ${
-                            m.isAbnormal
-                              ? 'bg-rose-50 text-rose-700 border-rose-200'
-                              : 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                          }`}
-                        >
-                          {m.isAbnormal ? 'غير طبيعي' : 'طبيعي'}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`text-xs px-2.5 py-1 rounded-full font-bold border ${
+                              m.isAbnormal
+                                ? 'bg-rose-50 text-rose-700 border-rose-200'
+                                : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                            }`}
+                          >
+                            {m.isAbnormal ? 'غير طبيعي' : 'طبيعي'}
+                          </span>
+
+                          <button
+                            onClick={() => handleDeleteMeasurement(m.id)}
+                            className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
+                            title="حذف القياس"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
                     );
                   })}

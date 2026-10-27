@@ -43,8 +43,18 @@ export default function ProfilesManagementPage() {
   const loadMembers = async () => {
     const list = await repo.getFamilyMembers();
     setMembers(list);
-    if (list.length > 0 && !activeMemberId) {
-      setActiveMemberId(list[0].id);
+    if (list.length > 0) {
+      if (!activeMemberId) setActiveMemberId(list[0].id);
+    } else {
+      setIsAdding(true);
+      setActiveMemberId('');
+    }
+  };
+
+  const handleDeleteMember = async (id: string, name: string) => {
+    if (window.confirm(`هل أنت متأكد من رغبتك في حذف ملف "${name}" وكافة قياساته وسجلاته نهائياً؟`)) {
+      await repo.deleteFamilyMember(id);
+      await loadMembers();
     }
   };
 
@@ -331,15 +341,24 @@ export default function ProfilesManagementPage() {
               </div>
 
               <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
-                <Link
-                  href={`/emergency/${member.id}`}
-                  className="text-xs font-bold text-rose-700 hover:text-rose-800"
-                >
-                  بطاقة الطوارئ
-                </Link>
+                <div className="flex items-center gap-3">
+                  <Link
+                    href={`/emergency/${member.id}`}
+                    className="text-xs font-bold text-rose-700 hover:text-rose-800"
+                  >
+                    بطاقة الطوارئ
+                  </Link>
+                  <button
+                    onClick={() => handleDeleteMember(member.id, member.fullName)}
+                    className="text-xs font-bold text-slate-400 hover:text-rose-600 flex items-center gap-1 cursor-pointer transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>حذف</span>
+                  </button>
+                </div>
                 <button
                   onClick={() => setActiveMemberId(member.id)}
-                  className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1"
+                  className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 cursor-pointer"
                 >
                   <span>اختيار كملف نشط</span>
                   <Check className="w-3.5 h-3.5" />

@@ -129,4 +129,54 @@ describe('Med Record Repository & Storage', () => {
     const afterMembers = await repo.getFamilyMembers(userId);
     expect(afterMembers.length).toBe(0);
   });
+
+  it('allows clearing all fake mock data and starting with a clean record', async () => {
+    const repo = getMedRecordRepository();
+    expect(repo.isMockDataActive()).toBe(true);
+
+    // Clear mock data
+    await repo.clearAllMockData();
+    expect(repo.isMockDataActive()).toBe(false);
+
+    const members = await repo.getFamilyMembers('user-demo-1');
+    expect(members.length).toBe(0);
+    const measurements = await repo.getMeasurements();
+    expect(measurements.length).toBe(0);
+
+    // Now add real user data
+    const realSelf = await repo.addFamilyMember({
+      userId: 'user-demo-1',
+      fullName: 'علي محمد',
+      relationship: 'self',
+      birthDate: '1990-05-10',
+      sex: 'male',
+      bloodType: 'O+',
+      isPrimary: true,
+      allergies: [],
+      chronicConditions: [],
+      emergencyContacts: [],
+    });
+
+    expect(realSelf.id).toBeDefined();
+    expect(repo.isMockDataActive()).toBe(false);
+
+    const activeMembers = await repo.getFamilyMembers('user-demo-1');
+    expect(activeMembers.length).toBe(1);
+    expect(activeMembers[0].fullName).toBe('علي محمد');
+  });
+
+  it('deletes family members, measurements, medications, and encounters individually', async () => {
+    const repo = getMedRecordRepository();
+    await repo.resetToMockData();
+
+    const members = await repo.getFamilyMembers('user-demo-1');
+    const child = members.find(m => m.relationship === 'child')!;
+
+    // Delete child
+    const deleted = await repo.deleteFamilyMember(child.id);
+    expect(deleted).toBe(true);
+
+    const afterMembers = await repo.getFamilyMembers('user-demo-1');
+    expect(afterMembers.some(m => m.id === child.id)).toBe(false);
+  });
 });

@@ -25,6 +25,8 @@ import {
 import { evaluateVitalMeasurement } from './vitals-evaluator';
 import { LOINC_CODES } from './standards';
 
+export const LOCAL_STORAGE_KEY = 'med_record_store_v1';
+
 export interface CreateReportInput {
   memberId: string;
   title: string;
@@ -34,7 +36,21 @@ export interface CreateReportInput {
   summaryNotes?: string;
 }
 
+export interface MedRecordStorageState {
+  isMockData: boolean;
+  members: FamilyMember[];
+  measurements: Measurement[];
+  growthMeasurements: GrowthMeasurement[];
+  medications: Medication[];
+  documents: MedicalDocument[];
+  encounters: Encounter[];
+  vaccinations: Vaccination[];
+  reports: DoctorReport[];
+  shares: ReportShare[];
+}
+
 export class InMemoryMedRecordRepository {
+  private isMockData: boolean = true;
   private members: FamilyMember[] = [];
   private measurements: Measurement[] = [];
   private growthMeasurements: GrowthMeasurement[] = [];
@@ -46,10 +62,105 @@ export class InMemoryMedRecordRepository {
   private shares: ReportShare[] = [];
 
   constructor() {
-    this.resetToMockData();
+    this.init();
   }
 
+  private init() {
+    // 1. Try loading from browser localStorage if available
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = window.localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          this.fromJSON(parsed);
+          return;
+        }
+      } catch (err) {
+        console.warn('Failed to load med record from localStorage:', err);
+      }
+    }
+
+    // 2. Default to mock data initially
+    this.resetToMockData();
+
+    // 3. Trigger async sync with server disk storage in browser
+    if (typeof window !== 'undefined') {
+      this.syncWithServer();
+    }
+  }
+
+  public toJSON(): MedRecordStorageState {
+    return {
+      isMockData: this.isMockData,
+      members: this.members,
+      measurements: this.measurements,
+      growthMeasurements: this.growthMeasurements,
+      medications: this.medications,
+      documents: this.documents,
+      encounters: this.encounters,
+      vaccinations: this.vaccinations,
+      reports: this.reports,
+      shares: this.shares,
+    };
+  }
+
+  public fromJSON(data: Partial<MedRecordStorageState>) {
+    this.isMockData = data.isMockData ?? false;
+    this.members = data.members ? JSON.parse(JSON.stringify(data.members)) : [];
+    this.measurements = data.measurements ? JSON.parse(JSON.stringify(data.measurements)) : [];
+    this.growthMeasurements = data.growthMeasurements ? JSON.parse(JSON.stringify(data.growthMeasurements)) : [];
+    this.medications = data.medications ? JSON.parse(JSON.stringify(data.medications)) : [];
+    this.documents = data.documents ? JSON.parse(JSON.stringify(data.documents)) : [];
+    this.encounters = data.encounters ? JSON.parse(JSON.stringify(data.encounters)) : [];
+    this.vaccinations = data.vaccinations ? JSON.parse(JSON.stringify(data.vaccinations)) : [];
+    this.reports = data.reports ? JSON.parse(JSON.stringify(data.reports)) : [];
+    this.shares = data.shares ? JSON.parse(JSON.stringify(data.shares)) : [];
+  }
+
+  private saveToStorage() {
+    if (typeof window !== 'undefined') {
+      try {
+        const state = this.toJSON();
+        window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
+
+        // Asynchronously save to server disk db
+        fetch('/api/med-record/storage', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(state),
+        }).catch(() => {
+          // Ignore offline/server fetch failures; localStorage preserves the data
+        });
+      } catch (err) {
+        console.error('Failed to save to localStorage:', err);
+      }
+    }
+  }
+
+  private async syncWithServer() {
+    if (typeof window === 'undefined') return;
+    try {
+      const res = await fetch('/api/med-record/storage');
+      if (res.ok) {
+        const serverState = await res.json();
+        const localStored = window.localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (!localStored && serverState) {
+          this.fromJSON(serverState);
+          window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(this.toJSON()));
+        }
+      }
+    } catch {
+      // Ignore background sync errors
+    }
+  }
+
+  public isMockDataActive(): boolean {
+    return this.isMockData;
+  }
+
+  // --- Reset to Mock Data ---
   async resetToMockData(): Promise<void> {
+    this.isMockData = true;
     this.members = JSON.parse(JSON.stringify(MOCK_FAMILY_MEMBERS));
     this.measurements = JSON.parse(JSON.stringify(MOCK_MEASUREMENTS));
     this.growthMeasurements = JSON.parse(JSON.stringify(MOCK_GROWTH_MEASUREMENTS));
@@ -59,6 +170,22 @@ export class InMemoryMedRecordRepository {
     this.vaccinations = JSON.parse(JSON.stringify(MOCK_VACCINATIONS));
     this.reports = [];
     this.shares = [];
+    this.saveToStorage();
+  }
+
+  // --- Clear All Mock Data (Start Clean Real Record) ---
+  async clearAllMockData(): Promise<void> {
+    this.isMockData = false;
+    this.members = [];
+    this.measurements = [];
+    this.growthMeasurements = [];
+    this.medications = [];
+    this.documents = [];
+    this.encounters = [];
+    this.vaccinations = [];
+    this.reports = [];
+    this.shares = [];
+    this.saveToStorage();
   }
 
   // --- Family Members ---
@@ -71,12 +198,20 @@ export class InMemoryMedRecordRepository {
   }
 
   async addFamilyMember(memberData: Omit<FamilyMember, 'id' | 'createdAt'>): Promise<FamilyMember> {
+    // Adding real data switches mock mode off
+    this.isMockData = false;
+
+    // If this is the first member, mark as primary by default
+    const isFirst = this.members.length === 0;
+
     const newMember: FamilyMember = {
       ...memberData,
+      isPrimary: memberData.isPrimary !== undefined ? memberData.isPrimary : isFirst,
       id: `member-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       createdAt: new Date().toISOString(),
     };
     this.members.push(newMember);
+    this.saveToStorage();
     return newMember;
   }
 
@@ -84,17 +219,37 @@ export class InMemoryMedRecordRepository {
     const idx = this.members.findIndex(m => m.id === id);
     if (idx === -1) return null;
     this.members[idx] = { ...this.members[idx], ...updates };
+    this.saveToStorage();
     return this.members[idx];
   }
 
+  async deleteFamilyMember(id: string): Promise<boolean> {
+    const idx = this.members.findIndex(m => m.id === id);
+    if (idx === -1) return false;
+
+    this.members.splice(idx, 1);
+    // Cascade delete related records
+    this.measurements = this.measurements.filter(m => m.memberId !== id);
+    this.growthMeasurements = this.growthMeasurements.filter(g => g.memberId !== id);
+    this.medications = this.medications.filter(med => med.memberId !== id);
+    this.documents = this.documents.filter(d => d.memberId !== id);
+    this.encounters = this.encounters.filter(e => e.memberId !== id);
+    this.vaccinations = this.vaccinations.filter(v => v.memberId !== id);
+    this.reports = this.reports.filter(r => r.memberId !== id);
+
+    this.saveToStorage();
+    return true;
+  }
+
   // --- Measurements ---
-  async getMeasurements(memberId: string, type?: MeasurementType): Promise<Measurement[]> {
+  async getMeasurements(memberId?: string, type?: MeasurementType): Promise<Measurement[]> {
     return this.measurements
-      .filter(m => m.memberId === memberId && (!type || m.measurementType === type))
+      .filter(m => (!memberId || m.memberId === memberId) && (!type || m.measurementType === type))
       .sort((a, b) => new Date(a.recordedAt).getTime() - new Date(b.recordedAt).getTime());
   }
 
   async addMeasurement(measurementData: Omit<Measurement, 'id'>): Promise<Measurement> {
+    this.isMockData = false;
     const evaluation = evaluateVitalMeasurement(
       measurementData.measurementType,
       measurementData.values
@@ -119,7 +274,16 @@ export class InMemoryMedRecordRepository {
       loincCode: loinc,
     };
     this.measurements.push(newMeasurement);
+    this.saveToStorage();
     return newMeasurement;
+  }
+
+  async deleteMeasurement(id: string): Promise<boolean> {
+    const idx = this.measurements.findIndex(m => m.id === id);
+    if (idx === -1) return false;
+    this.measurements.splice(idx, 1);
+    this.saveToStorage();
+    return true;
   }
 
   // --- Growth Measurements ---
@@ -130,11 +294,13 @@ export class InMemoryMedRecordRepository {
   }
 
   async addGrowthMeasurement(growthData: Omit<GrowthMeasurement, 'id'>): Promise<GrowthMeasurement> {
+    this.isMockData = false;
     const newGrowth: GrowthMeasurement = {
       ...growthData,
       id: `gw-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
     };
     this.growthMeasurements.push(newGrowth);
+    this.saveToStorage();
     return newGrowth;
   }
 
@@ -146,12 +312,14 @@ export class InMemoryMedRecordRepository {
   }
 
   async addMedication(medData: Omit<Medication, 'id' | 'createdAt'>): Promise<Medication> {
+    this.isMockData = false;
     const newMed: Medication = {
       ...medData,
       id: `med-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       createdAt: new Date().toISOString(),
     };
     this.medications.push(newMed);
+    this.saveToStorage();
     return newMed;
   }
 
@@ -159,7 +327,16 @@ export class InMemoryMedRecordRepository {
     const idx = this.medications.findIndex(m => m.id === id);
     if (idx === -1) return null;
     this.medications[idx] = { ...this.medications[idx], ...updates };
+    this.saveToStorage();
     return this.medications[idx];
+  }
+
+  async deleteMedication(id: string): Promise<boolean> {
+    const idx = this.medications.findIndex(m => m.id === id);
+    if (idx === -1) return false;
+    this.medications.splice(idx, 1);
+    this.saveToStorage();
+    return true;
   }
 
   // --- Medical Documents ---
@@ -186,12 +363,14 @@ export class InMemoryMedRecordRepository {
   }
 
   async addDocument(docData: Omit<MedicalDocument, 'id' | 'createdAt'>): Promise<MedicalDocument> {
+    this.isMockData = false;
     const newDoc: MedicalDocument = {
       ...docData,
       id: `doc-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       createdAt: new Date().toISOString(),
     };
     this.documents.push(newDoc);
+    this.saveToStorage();
     return newDoc;
   }
 
@@ -199,24 +378,35 @@ export class InMemoryMedRecordRepository {
     const idx = this.documents.findIndex(d => d.id === id);
     if (idx === -1) return false;
     this.documents.splice(idx, 1);
+    this.saveToStorage();
     return true;
   }
 
   // --- Encounters ---
-  async getEncounters(memberId: string): Promise<Encounter[]> {
+  async getEncounters(memberId?: string): Promise<Encounter[]> {
     return this.encounters
-      .filter(e => e.memberId === memberId)
+      .filter(e => !memberId || e.memberId === memberId)
       .sort((a, b) => new Date(b.visitDate).getTime() - new Date(a.visitDate).getTime());
   }
 
   async addEncounter(encounterData: Omit<Encounter, 'id' | 'createdAt'>): Promise<Encounter> {
+    this.isMockData = false;
     const newEnc: Encounter = {
       ...encounterData,
       id: `enc-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       createdAt: new Date().toISOString(),
     };
     this.encounters.push(newEnc);
+    this.saveToStorage();
     return newEnc;
+  }
+
+  async deleteEncounter(id: string): Promise<boolean> {
+    const idx = this.encounters.findIndex(e => e.id === id);
+    if (idx === -1) return false;
+    this.encounters.splice(idx, 1);
+    this.saveToStorage();
+    return true;
   }
 
   // --- Vaccinations ---
@@ -225,12 +415,14 @@ export class InMemoryMedRecordRepository {
   }
 
   async addVaccination(vaccineData: Omit<Vaccination, 'id' | 'createdAt'>): Promise<Vaccination> {
+    this.isMockData = false;
     const newVac: Vaccination = {
       ...vaccineData,
       id: `vac-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       createdAt: new Date().toISOString(),
     };
     this.vaccinations.push(newVac);
+    this.saveToStorage();
     return newVac;
   }
 
@@ -238,6 +430,7 @@ export class InMemoryMedRecordRepository {
     const idx = this.vaccinations.findIndex(v => v.id === id);
     if (idx === -1) return null;
     this.vaccinations[idx] = { ...this.vaccinations[idx], ...updates };
+    this.saveToStorage();
     return this.vaccinations[idx];
   }
 
@@ -279,6 +472,7 @@ export class InMemoryMedRecordRepository {
     };
 
     this.reports.push(report);
+    this.saveToStorage();
     return report;
   }
 
@@ -305,6 +499,7 @@ export class InMemoryMedRecordRepository {
     };
 
     this.shares.push(share);
+    this.saveToStorage();
     return share;
   }
 
@@ -325,6 +520,7 @@ export class InMemoryMedRecordRepository {
 
     share.viewCount += 1;
     share.lastViewedAt = new Date().toISOString();
+    this.saveToStorage();
 
     const report = await this.getDoctorReport(share.reportId);
     if (!report) return null;
@@ -339,6 +535,7 @@ export class InMemoryMedRecordRepository {
     const share = this.shares.find(s => s.id === shareId);
     if (!share) return false;
     share.isRevoked = true;
+    this.saveToStorage();
     return true;
   }
 
@@ -357,6 +554,9 @@ export class InMemoryMedRecordRepository {
     const userReportIds = this.reports.filter(r => userMemberIds.includes(r.memberId)).map(r => r.id);
     this.reports = this.reports.filter(r => !userMemberIds.includes(r.memberId));
     this.shares = this.shares.filter(s => !userReportIds.includes(s.reportId));
+    this.isMockData = false;
+
+    this.saveToStorage();
   }
 }
 

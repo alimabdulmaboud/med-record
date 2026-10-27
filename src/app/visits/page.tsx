@@ -43,6 +43,11 @@ export default function VisitsPage() {
     await loadMemberEncounters(activeMemberId);
   };
 
+  const handleDeleteEncounter = async (id: string) => {
+    await repo.deleteEncounter(id);
+    await loadMemberEncounters(activeMemberId);
+  };
+
   const activeMember = members.find(m => m.id === activeMemberId) || members[0];
 
   return (
@@ -70,6 +75,7 @@ export default function VisitsPage() {
           memberName={activeMember?.fullName || ''}
           encounters={encounters}
           onAddEncounter={handleAddEncounter}
+          onDeleteEncounter={handleDeleteEncounter}
         />
       </main>
     </div>

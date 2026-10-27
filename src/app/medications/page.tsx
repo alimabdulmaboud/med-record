@@ -48,6 +48,11 @@ export default function MedicationsPage() {
     await loadMemberMeds(activeMemberId);
   };
 
+  const handleDeleteMedication = async (id: string) => {
+    await repo.deleteMedication(id);
+    await loadMemberMeds(activeMemberId);
+  };
+
   const activeMember = members.find(m => m.id === activeMemberId) || members[0];
 
   return (
@@ -76,6 +81,7 @@ export default function MedicationsPage() {
           medications={medications}
           onAddMedication={handleAddMedication}
           onUpdateStatus={handleUpdateStatus}
+          onDeleteMedication={handleDeleteMedication}
         />
       </main>
     </div>
