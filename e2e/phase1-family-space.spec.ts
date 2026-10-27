@@ -73,7 +73,11 @@ test.describe("Phase 1: Med Platform End-to-End Verification", () => {
     await expect(page.getByText("ياسين أحمد مصطفى")).toBeVisible();
   });
 
-  test("4. Add person (< 1 min), edit, and soft-archive person", async ({ page }) => {
+  test("4. Add person (< 1 min), edit, and soft-archive person", async ({ page, context }) => {
+    await context.addCookies([
+      { name: "med_consent_accepted", value: "true", domain: "localhost", path: "/" },
+      { name: "med_auth_session", value: "active", domain: "localhost", path: "/" },
+    ]);
     await page.goto("/family");
 
     // Add new child
@@ -90,7 +94,11 @@ test.describe("Phase 1: Med Platform End-to-End Verification", () => {
     await expect(page.getByText("مريم أحمد مصطفى")).toBeVisible();
   });
 
-  test("5. Data export produces JSON and Danger Zone requires typed confirmation", async ({ page }) => {
+  test("5. Data export produces JSON and Danger Zone requires typed confirmation", async ({ page, context }) => {
+    await context.addCookies([
+      { name: "med_consent_accepted", value: "true", domain: "localhost", path: "/" },
+      { name: "med_auth_session", value: "active", domain: "localhost", path: "/" },
+    ]);
     await page.goto("/family/settings");
 
     // Verify Export JSON button
