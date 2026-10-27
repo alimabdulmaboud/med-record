@@ -4,10 +4,14 @@ import React from "react";
 import Link from "next/link";
 import { ArrowRight, UserPlus } from "lucide-react";
 import { PersonForm } from "@/components/family/PersonForm";
-import type { CreatePersonInput, Person } from "@/types/family";
+import type { CreatePersonInput, UpdatePersonInput, Person } from "@/types/family";
 
 export default function NewPersonPage() {
-  const handleCreate = async (data: CreatePersonInput) => {
+  const handleCreate = async (data: CreatePersonInput | UpdatePersonInput) => {
+    if (!data.name || !data.birth_date || !data.sex) {
+      throw new Error("البيانات الأساسية مطلوبة");
+    }
+
     const newPerson: Person = {
       id: "p-" + Date.now(),
       family_id: "fam-demo",
