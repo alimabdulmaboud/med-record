@@ -129,7 +129,7 @@ export function MedicationsManager({
         <div className="py-16 text-center bg-white rounded-2xl border border-dashed border-slate-200 p-8 space-y-2">
           <Pill className="w-10 h-10 text-slate-300 mx-auto" />
           <h4 className="text-sm font-bold text-slate-700">لا توجد أدوية في هذا القسم</h4>
-          <p className="text-xs text-slate-400">انقر على زر "إضافة دواء جديد" لإدراج جرعة وعلاج جديد</p>
+          <p className="text-xs text-slate-400">انقر على زر &quot;إضافة دواء جديد&quot; لإدراج جرعة وعلاج جديد</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

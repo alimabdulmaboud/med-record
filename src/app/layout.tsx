@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Cairo } from "next/font/google";
 import "./globals.css";
 import { t } from "@/lib/i18n";
@@ -10,9 +10,14 @@ const cairo = Cairo({
   display: "swap",
 });
 
+export const viewport: Viewport = {
+  themeColor: "#059669",
+};
+
 export const metadata: Metadata = {
-  title: `${t("app.name")} — ${t("app.tagline")}`,
-  description: t("app.description"),
+  title: "سجلي الطبي — Med Record | السجل الطبي الموحد للأسرة",
+  description: "تطبيق السجل الطبي للأسرة: متابعة المؤشرات الحيوية ونمو الأطفال وخزينة الوثائق وتقارير الأطباء المعتمدة",
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
