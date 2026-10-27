@@ -92,7 +92,7 @@ describe('HL7 FHIR & LOINC Standards Mapping', () => {
     expect(composition.title).toContain('Patient Summary');
 
     // Entry 1 must be Patient
-    const patient = bundle.entry[1].resource;
+    const patient = bundle.entry[1].resource as Record<string, any>;
     expect(patient.resourceType).toBe('Patient');
     expect(patient.name[0].text).toBe('أحمد مصطفى');
     expect(patient.gender).toBe('male');
@@ -101,7 +101,8 @@ describe('HL7 FHIR & LOINC Standards Mapping', () => {
     // Should include observation
     const observations = bundle.entry.filter(e => e.resource.resourceType === 'Observation');
     expect(observations.length).toBe(1);
-    expect(observations[0].resource.code.coding[0].code).toBe(LOINC_CODES.BLOOD_PRESSURE_PANEL);
+    const firstObs = observations[0].resource as Record<string, any>;
+    expect(firstObs.code.coding[0].code).toBe(LOINC_CODES.BLOOD_PRESSURE_PANEL);
 
     // Should include medication statement
     const medications = bundle.entry.filter(e => e.resource.resourceType === 'MedicationStatement');
