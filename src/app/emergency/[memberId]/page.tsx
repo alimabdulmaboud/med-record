@@ -115,7 +115,7 @@ export default function EmergencyMemberPage() {
               <h1 className="text-2xl font-black text-white">{activeMember.fullName}</h1>
               <p className="text-xs text-rose-100 mt-1">
                 {age} سنة • {activeMember.sex === 'male' ? 'ذكر' : 'أنثى'} •{' '}
-                {activeMember.relationship === 'self' ? 'صاحب الحساب' : activeMember.relationship}
+                {activeMember.relationshipLabel || (activeMember.relationship === 'self' ? 'صاحب الحساب' : activeMember.relationship)}
               </p>
             </div>
 

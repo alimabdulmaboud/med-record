@@ -20,16 +20,19 @@ export function FamilySwitcher({
   const [isOpen, setIsOpen] = useState(false);
   const activeMember = members.find(m => m.id === activeMemberId) || members[0];
 
-  const getRelationshipBadge = (relationship: FamilyMember['relationship']) => {
-    switch (relationship) {
-      case 'self':
-        return 'حسابي';
+  const getRelationshipBadge = (m?: FamilyMember) => {
+    if (!m) return '';
+    if (m.isPrimary || m.relationship === 'self') return 'صاحب الحساب';
+    if (m.relationshipLabel) return m.relationshipLabel;
+    switch (m.relationship) {
       case 'child':
-        return 'طفل';
+        return m.sex === 'female' ? 'ابنة' : 'ابن';
       case 'spouse':
-        return 'زوج/زوجة';
+        return m.sex === 'female' ? 'زوجة' : 'زوج';
       case 'parent':
-        return 'والد/والدة';
+        return m.sex === 'female' ? 'والدة' : 'والد';
+      case 'sibling':
+        return m.sex === 'female' ? 'أخت' : 'أخ';
       default:
         return 'فرد عائلة';
     }
@@ -52,7 +55,7 @@ export function FamilySwitcher({
           <div className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
             <span>{activeMember?.fullName}</span>
             <span className="text-[10px] font-normal px-1.5 py-0.2 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
-              {getRelationshipBadge(activeMember?.relationship)}
+              {getRelationshipBadge(activeMember)}
             </span>
           </div>
           <div className="text-[11px] text-slate-500">
@@ -102,7 +105,7 @@ export function FamilySwitcher({
                           {member.fullName}
                         </div>
                         <div className="text-[10px] text-slate-500 flex items-center gap-2">
-                          <span>{getRelationshipBadge(member.relationship)}</span>
+                          <span>{getRelationshipBadge(member)}</span>
                           <span>•</span>
                           <span className="text-rose-600 font-medium">{member.bloodType}</span>
                         </div>

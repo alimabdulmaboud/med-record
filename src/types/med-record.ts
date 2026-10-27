@@ -9,7 +9,13 @@ export type BloodType =
   | 'O-'
   | 'unknown';
 
-export type RelationshipType = 'self' | 'child' | 'spouse' | 'parent';
+export type RelationshipType =
+  | 'self'
+  | 'child'
+  | 'spouse'
+  | 'parent'
+  | 'sibling'
+  | 'other';
 
 export type Gender = 'male' | 'female';
 
@@ -25,6 +31,7 @@ export interface FamilyMember {
   userId: string;
   fullName: string;
   relationship: RelationshipType;
+  relationshipLabel?: string;
   birthDate: string; // YYYY-MM-DD
   sex: Gender;
   bloodType: BloodType;
