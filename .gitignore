@@ -5,8 +5,11 @@ build
 dist
 playwright-report
 test-results
+.env
 .env.local
 .env*.local
+.env.production
+.env.development
 *.tsbuildinfo
 .DS_Store
 Thumbs.db

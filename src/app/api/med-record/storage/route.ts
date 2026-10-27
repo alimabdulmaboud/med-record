@@ -15,8 +15,12 @@ const DATA_DIR = path.join(process.cwd(), 'data');
 const DB_FILE = path.join(DATA_DIR, 'med-record-db.json');
 
 function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+  } catch {
+    // Read-only filesystem in serverless environments
   }
 }
 
@@ -53,18 +57,15 @@ function getCleanEmptyState() {
 export async function GET() {
   try {
     ensureDataDir();
-    if (!fs.existsSync(DB_FILE)) {
-      const defaultState = getDefaultMockState();
-      fs.writeFileSync(DB_FILE, JSON.stringify(defaultState, null, 2), 'utf-8');
-      return NextResponse.json(defaultState);
+    if (fs.existsSync(DB_FILE)) {
+      const content = fs.readFileSync(DB_FILE, 'utf-8');
+      const data = JSON.parse(content);
+      return NextResponse.json(data);
     }
-
-    const content = fs.readFileSync(DB_FILE, 'utf-8');
-    const data = JSON.parse(content);
-    return NextResponse.json(data);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch {
+    // Fall back safely to default state if filesystem is not readable
   }
+  return NextResponse.json(getDefaultMockState());
 }
 
 export async function POST(req: Request) {
@@ -74,18 +75,30 @@ export async function POST(req: Request) {
 
     if (body.action === 'clear_mock') {
       const emptyState = getCleanEmptyState();
-      fs.writeFileSync(DB_FILE, JSON.stringify(emptyState, null, 2), 'utf-8');
+      try {
+        fs.writeFileSync(DB_FILE, JSON.stringify(emptyState, null, 2), 'utf-8');
+      } catch {
+        // read-only in serverless
+      }
       return NextResponse.json({ success: true, state: emptyState });
     }
 
     if (body.action === 'reset_mock') {
       const mockState = getDefaultMockState();
-      fs.writeFileSync(DB_FILE, JSON.stringify(mockState, null, 2), 'utf-8');
+      try {
+        fs.writeFileSync(DB_FILE, JSON.stringify(mockState, null, 2), 'utf-8');
+      } catch {
+        // read-only in serverless
+      }
       return NextResponse.json({ success: true, state: mockState });
     }
 
     // Direct save of full state
-    fs.writeFileSync(DB_FILE, JSON.stringify(body, null, 2), 'utf-8');
+    try {
+      fs.writeFileSync(DB_FILE, JSON.stringify(body, null, 2), 'utf-8');
+    } catch {
+      // read-only in serverless
+    }
     return NextResponse.json({ success: true });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
