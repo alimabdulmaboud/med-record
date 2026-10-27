@@ -29,7 +29,6 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@opennextjs/cloudflare": "^1.20.10",
     "@playwright/test": "^1.50.1",
     "@testing-library/react": "^16.2.0",
     "@types/node": "^22.13.4",
@@ -44,7 +43,6 @@
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.3",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.0.5",
-    "wrangler": "^4.149.0"
+    "vitest": "^3.0.5"
   }
 }
