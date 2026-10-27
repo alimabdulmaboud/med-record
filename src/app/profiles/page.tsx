@@ -18,6 +18,7 @@ import {
   Info,
 } from 'lucide-react';
 import { Header } from '@/components/med-record/Header';
+import { SymptomTriageModal } from '@/components/med-record/SymptomTriageModal';
 import { getMedRecordRepository } from '@/lib/med-record/repository';
 import type { FamilyMember, RelationshipType, Gender, BloodType } from '@/types/med-record';
 
@@ -57,6 +58,8 @@ export default function ProfilesManagementPage() {
   const [activeMemberId, setActiveMemberId] = useState<string>('');
   const [isAdding, setIsAdding] = useState(false);
   const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
+  const [isTriageOpen, setIsTriageOpen] = useState(false);
+  const [triageMember, setTriageMember] = useState<FamilyMember | null>(null);
 
   // Form State
   const [fullName, setFullName] = useState('');
@@ -554,6 +557,18 @@ export default function ProfilesManagementPage() {
                       </div>
                     )}
                   </div>
+
+                  {/* AI Symptom Triage Button */}
+                  <button
+                    onClick={() => {
+                      setTriageMember(member);
+                      setIsTriageOpen(true);
+                    }}
+                    className="w-full mt-3.5 py-2 px-3 bg-linear-to-r from-emerald-50 to-teal-50 hover:from-emerald-100 hover:to-teal-100 border border-emerald-200/90 rounded-2xl text-xs font-black text-emerald-900 flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs group"
+                  >
+                    <Sparkles className="w-4 h-4 text-emerald-600 group-hover:scale-110 transition-transform" />
+                    <span>فحص الأعراض وتحديد التخصص (AI Triage)</span>
+                  </button>
                 </div>
 
                 <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
@@ -599,6 +614,16 @@ export default function ProfilesManagementPage() {
           })}
         </div>
       </main>
+
+      {/* Symptom Triage Modal */}
+      <SymptomTriageModal
+        isOpen={isTriageOpen}
+        onClose={() => {
+          setIsTriageOpen(false);
+          setTriageMember(null);
+        }}
+        member={triageMember}
+      />
     </div>
   );
 }

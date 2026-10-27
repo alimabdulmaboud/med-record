@@ -20,10 +20,13 @@ import {
   ShieldCheck,
   Baby,
   Users,
+  Sparkles,
+  Stethoscope,
 } from 'lucide-react';
 import { Header } from '@/components/med-record/Header';
 import { EmergencyBanner } from '@/components/med-record/EmergencyBanner';
 import { QuickLogModal } from '@/components/med-record/QuickLogModal';
+import { SymptomTriageModal } from '@/components/med-record/SymptomTriageModal';
 import { getMedRecordRepository } from '@/lib/med-record/repository';
 import type {
   FamilyMember,
@@ -50,6 +53,7 @@ export default function MedRecordDashboard() {
   const [vaccinations, setVaccinations] = useState<Vaccination[]>([]);
 
   const [isQuickLogOpen, setIsQuickLogOpen] = useState(false);
+  const [isTriageOpen, setIsTriageOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isMock, setIsMock] = useState(true);
 
@@ -215,6 +219,36 @@ export default function MedRecordDashboard() {
           <>
             {/* Emergency Info Banner */}
             {activeMember && <EmergencyBanner member={activeMember} />}
+
+            {/* AI Symptom Checker & Triage Banner */}
+            <div className="bg-linear-to-r from-teal-950 via-slate-900 to-emerald-950 text-white rounded-3xl p-4 sm:p-5 shadow-md border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in">
+              <div className="flex items-start sm:items-center gap-3.5">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0 shadow-inner">
+                  <Sparkles className="w-6 h-6 animate-pulse" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm sm:text-base font-black text-white">
+                      حاسس بتعب أو ألم في جسمك؟
+                    </h3>
+                    <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                      مساعد الفحص وتوجيه التخصصات
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300 mt-1 max-w-xl leading-relaxed">
+                    اكتب ما تشعر به لـ <span className="text-white font-bold">{activeMember?.fullName}</span>، وسيطرح عليك المساعد أسئلة متابعة لتحديد التخصص الطبي الأنسب والاحتمالات المبدئية وحفظها في سجلك الطبي.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setIsTriageOpen(true)}
+                className="px-5 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black text-xs shadow-md shadow-emerald-600/30 transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer group"
+              >
+                <Stethoscope className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                <span>فحص الأعراض الآن</span>
+              </button>
+            </div>
 
             {/* Quick Action Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -565,6 +599,18 @@ export default function MedRecordDashboard() {
         isChild={isChild}
         onClose={() => setIsQuickLogOpen(false)}
         onSave={handleSaveQuickMeasurement}
+      />
+
+      {/* Symptom Triage Modal */}
+      <SymptomTriageModal
+        isOpen={isTriageOpen}
+        member={activeMember || null}
+        onClose={() => setIsTriageOpen(false)}
+        onAssessmentSaved={() => {
+          if (activeMemberId) {
+            loadMemberData(activeMemberId);
+          }
+        }}
       />
     </div>
   );

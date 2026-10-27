@@ -196,3 +196,36 @@ export interface ReportShare {
   lastViewedAt?: string;
   createdAt: string;
 }
+
+export type UrgencyLevel = 'routine' | 'urgent' | 'emergency';
+
+export interface TriageMessage {
+  id: string;
+  sender: 'user' | 'assistant';
+  text: string;
+  timestamp: string;
+  quickOptions?: string[];
+}
+
+export interface TriageAssessment {
+  primaryComplaint: string;
+  possibleCauses: string[];
+  recommendedSpecialtyAr: string;
+  recommendedSpecialtyEn: string;
+  urgencyLevel: UrgencyLevel;
+  urgencyExplanationAr: string;
+  redFlags: string[];
+  comfortAdvice: string[];
+  questionsForDoctor: string[];
+  summaryNoteForRecord: string;
+}
+
+export interface TriageSession {
+  id: string;
+  memberId: string;
+  startedAt: string;
+  messages: TriageMessage[];
+  assessment?: TriageAssessment;
+  isCompleted: boolean;
+}
+
