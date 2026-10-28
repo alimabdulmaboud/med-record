@@ -87,6 +87,17 @@ import { MedicationsList } from "@/components/family/MedicationsList";
 import { EncountersTimeline } from "@/components/family/EncountersTimeline";
 import { VaccinationTracker } from "@/components/family/VaccinationTracker";
 import { RecordVaccinationModal } from "@/components/family/RecordVaccinationModal";
+import type { DoctorReportEntity, CreateDoctorReportInput } from "@/types/reports";
+import {
+  getPersonDoctorReports,
+  createDoctorReport,
+  generateReportShareLink,
+  revokeReportShareLink,
+  seedRealisticMockReports,
+} from "@/lib/family/reports-service";
+import { DoctorReportModal } from "@/components/family/DoctorReportModal";
+import { DoctorReportView } from "@/components/family/DoctorReportView";
+import { DoctorReportShareModal } from "@/components/family/DoctorReportShareModal";
 
 const INITIAL_DEMO_PEOPLE: Person[] = [
   {
@@ -168,7 +179,14 @@ export default function PersonHealthDashboard({
     | "medications"
     | "encounters"
     | "vaccinations"
+    | "reports"
   >("vitals");
+
+  const [reports, setReports] = useState<DoctorReportEntity[]>([]);
+  const [activeReportToView, setActiveReportToView] = useState<DoctorReportEntity | null>(null);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [shareModalReport, setShareModalReport] = useState<DoctorReportEntity | null>(null);
 
   const [medications, setMedications] = useState<PersonMedication[]>([]);
   const [encounters, setEncounters] = useState<PersonEncounter[]>([]);
@@ -250,6 +268,13 @@ export default function PersonHealthDashboard({
 
       const s = await getLatestVitalsSummary(personId);
       setSummary(s);
+
+      await seedRealisticMockReports(found);
+      const repList = await getPersonDoctorReports(personId);
+      setReports(repList);
+      if (repList.length > 0) {
+        setActiveReportToView(repList[0]);
+      }
 
       if (ageCalc.isChild) {
         await seedRealisticMockVaccinations(personId, found.family_id, found.birth_date);
@@ -348,6 +373,50 @@ export default function PersonHealthDashboard({
     await loadData();
   };
 
+  const handleOpenDoctorReportModal = () => {
+    setIsReportModalOpen(true);
+  };
+
+  const handleGenerateDoctorReport = async (
+    input: CreateDoctorReportInput
+  ): Promise<DoctorReportEntity> => {
+    if (!person) throw new Error("No person");
+    const rep = await createDoctorReport(input, "usr-mgr", person);
+    await loadData();
+    setActiveReportToView(rep);
+    setActiveTab("reports");
+    return rep;
+  };
+
+  const handleOpenShareModal = (reportEntity: DoctorReportEntity) => {
+    setShareModalReport(reportEntity);
+    setIsShareModalOpen(true);
+  };
+
+  const handleCreateShareLink = async (
+    reportId: string,
+    hours: number,
+    pin?: string
+  ) => {
+    if (!person) throw new Error("No person");
+    const s = await generateReportShareLink(
+      {
+        family_id: person.family_id,
+        person_id: person.id,
+        report_id: reportId,
+        expires_in_hours: hours,
+        pin,
+      },
+      "usr-mgr"
+    );
+    return { accessToken: s.access_token, expiresAt: s.expires_at };
+  };
+
+  const handleRevokeShareLink = async (shareId: string) => {
+    await revokeReportShareLink(shareId, "usr-mgr");
+    await loadData();
+  };
+
   if (loading || !person) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6 text-slate-500" dir="rtl">
@@ -382,6 +451,14 @@ export default function PersonHealthDashboard({
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleOpenDoctorReportModal}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 text-xs font-bold hover:bg-emerald-100 transition-all cursor-pointer shadow-xs"
+          >
+            <FileText className="w-3.5 h-3.5 text-emerald-600" />
+            <span className="hidden sm:inline">تقرير الطبيب (A4 / PDF)</span>
+          </button>
           <Link
             href={`/emergency/${person.id}`}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900 text-xs font-bold hover:bg-rose-100 transition-all"
@@ -719,6 +796,19 @@ export default function PersonHealthDashboard({
           >
             سجل القراءات التاريخي ({measurements.length})
           </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("reports")}
+            className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+              activeTab === "reports"
+                ? "bg-emerald-600 text-white shadow-sm shadow-emerald-600/20"
+                : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+            }`}
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span>التقارير الطبية ({reports.length})</span>
+          </button>
         </div>
 
         {/* Tab 1: Growth Curves (Child) */}
@@ -913,6 +1003,80 @@ export default function PersonHealthDashboard({
           </div>
         )}
 
+        {/* Reports Tab Panel */}
+        {activeTab === "reports" && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
+              <div>
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                  التقارير الطبية وملخصات الزيارة (A4 / IPS)
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  توليد تقرير طبي موحد وموجز لتقديمه للطبيب، مع إمكانية الطباعة أو مشاركة رابط مشفر ومؤقت.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleOpenDoctorReportModal}
+                className="px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-md shadow-emerald-600/20 flex items-center gap-1.5 transition-all cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>إنشاء تقرير جديد</span>
+              </button>
+            </div>
+
+            {reports.length > 1 && (
+              <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                <span className="text-xs font-bold text-slate-400 shrink-0">التقارير السابقة:</span>
+                {reports.map((r) => (
+                  <button
+                    key={r.id}
+                    type="button"
+                    onClick={() => setActiveReportToView(r)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                      activeReportToView?.id === r.id
+                        ? "bg-emerald-600 text-white"
+                        : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50"
+                    }`}
+                  >
+                    {r.title}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {activeReportToView ? (
+              <DoctorReportView
+                report={activeReportToView}
+                onShare={() => handleOpenShareModal(activeReportToView)}
+              />
+            ) : (
+              <div className="bg-white dark:bg-slate-900 rounded-3xl p-12 border border-slate-200/80 dark:border-slate-800 text-center space-y-4">
+                <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-950 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto">
+                  <FileText className="w-8 h-8" />
+                </div>
+                <div>
+                  <h4 className="text-base font-extrabold text-slate-900 dark:text-white">
+                    لا يوجد تقرير طبي مولد حتى الآن
+                  </h4>
+                  <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1 leading-relaxed">
+                    يمكنك بنقرة واحدة توليد تقرير طبي متكامل يلخص القياسات والأدوية والاستشارات والتحاليل في صفحة A4 منظمة.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleOpenDoctorReportModal}
+                  className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-2xl shadow-md shadow-emerald-600/20 inline-flex items-center gap-2 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>توليد تقرير طبي موجز للطبيب الآن</span>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Legal Disclaimer */}
         <div className="p-4 rounded-2xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 text-amber-900 dark:text-amber-200 text-xs flex items-center gap-2">
           <AlertCircle className="w-4 h-4 shrink-0 text-amber-600" />
@@ -977,6 +1141,29 @@ export default function PersonHealthDashboard({
         personId={person.id}
         onSave={handleSaveVaccination}
       />
+
+      {/* Doctor Report Modal Trigger */}
+      <DoctorReportModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        person={person}
+        onGenerateReport={handleGenerateDoctorReport}
+      />
+
+      {/* Doctor Report Share Modal Trigger */}
+      {shareModalReport && (
+        <DoctorReportShareModal
+          isOpen={isShareModalOpen}
+          onClose={() => {
+            setIsShareModalOpen(false);
+            setShareModalReport(null);
+          }}
+          reportId={shareModalReport.id}
+          patientName={person.name}
+          onCreateShare={handleCreateShareLink}
+          onRevokeShare={handleRevokeShareLink}
+        />
+      )}
     </div>
   );
 }

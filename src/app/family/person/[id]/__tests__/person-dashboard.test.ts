@@ -171,4 +171,48 @@ describe("Phase 2: Person Health Dashboard Integration", () => {
     expect(updated.stats.completed).toBe(1);
     expect(updated.stats.percentage).toBeGreaterThan(0);
   });
+
+  it("compiles, stores, and generates expiring share link for doctor reports", async () => {
+    const {
+      createDoctorReport,
+      getPersonDoctorReports,
+      generateReportShareLink,
+      verifyAndAccessSharedReport,
+    } = await import("@/lib/family/reports-service");
+
+    const report = await createDoctorReport(
+      {
+        family_id: adultAhmed.family_id,
+        person_id: adultAhmed.id,
+        title: "تقرير باطنة للطبيب المعالج",
+        date_range_from: "2026-01-01",
+        date_range_to: "2026-10-28",
+        summary_notes: "المريض يتابع بانتظام",
+      },
+      "usr-mgr-1",
+      adultAhmed
+    );
+
+    expect(report.title).toBe("تقرير باطنة للطبيب المعالج");
+    const reports = await getPersonDoctorReports(adultAhmed.id);
+    expect(reports.length).toBeGreaterThanOrEqual(1);
+
+    const share = await generateReportShareLink(
+      {
+        family_id: adultAhmed.family_id,
+        person_id: adultAhmed.id,
+        report_id: report.id,
+        expires_in_hours: 72,
+        pin: "1234",
+      },
+      "usr-mgr-1"
+    );
+
+    expect(share.access_token).toHaveLength(32);
+
+    const accessResult = await verifyAndAccessSharedReport(share.access_token, "1234");
+    expect(accessResult.success).toBe(true);
+    expect(accessResult.report?.id).toBe(report.id);
+    expect(accessResult.share?.access_count).toBe(1);
+  });
 });
