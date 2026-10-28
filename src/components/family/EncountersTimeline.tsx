@@ -89,7 +89,15 @@ export function EncountersTimeline({
         <div className="space-y-3">
           {encounters.map((enc) => {
             const followUpAlert = enc.follow_up_date
-              ? getFollowUpAlertStatus(enc)
+              ? getFollowUpAlertStatus({
+                  id: enc.id,
+                  memberId: enc.person_id,
+                  visitDate: enc.visit_date,
+                  doctorName: enc.doctor_name,
+                  specialty: enc.specialty,
+                  followUpDate: enc.follow_up_date,
+                  createdAt: enc.created_at,
+                })
               : null;
 
             return (

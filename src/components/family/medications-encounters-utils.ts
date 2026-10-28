@@ -41,10 +41,10 @@ export const STATUS_LABELS_AR: Record<MedicationStatus, { label: string; color: 
   },
 };
 
-export function filterMedicationsByTab(
-  medications: Array<{ status: MedicationStatus }>,
+export function filterMedicationsByTab<T extends { status: MedicationStatus }>(
+  medications: T[],
   tab: 'all' | MedicationStatus
-) {
+): T[] {
   if (tab === 'all') return medications;
   return medications.filter((m) => m.status === tab);
 }

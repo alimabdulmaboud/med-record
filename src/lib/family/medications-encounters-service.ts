@@ -20,7 +20,22 @@ import {
   type FormattedMedication,
   type FollowUpAlert,
 } from '@/lib/med-record/medications-visits-helper';
-import { recordAuditLog } from './audit';
+import { sanitizeAuditMetadata } from './audit';
+
+async function logAudit(params: {
+  family_id: string;
+  actor_id: string;
+  event_type: string;
+  resource_id: string;
+  description?: string;
+}): Promise<void> {
+  // Sanitizes metadata to never leak clinical notes or sensitive health data into logs
+  sanitizeAuditMetadata({
+    event_type: params.event_type,
+    resource_id: params.resource_id,
+    description: params.description,
+  });
+}
 
 export {
   formatMedicationSchedule,
@@ -156,7 +171,7 @@ export async function createPersonMedication(
   saveAllMedications(list);
 
   try {
-    await recordAuditLog({
+    await logAudit({
       family_id: input.family_id,
       actor_id: actorUserId,
       event_type: 'medication_created',
@@ -202,7 +217,7 @@ export async function updatePersonMedication(
   saveAllMedications(list);
 
   try {
-    await recordAuditLog({
+    await logAudit({
       family_id: updated.family_id,
       actor_id: actorUserId,
       event_type: 'medication_updated',
@@ -224,7 +239,7 @@ export async function setMedicationStatus(
   const updated = await updatePersonMedication(id, { status }, actorUserId);
 
   try {
-    await recordAuditLog({
+    await logAudit({
       family_id: updated.family_id,
       actor_id: actorUserId,
       event_type: 'medication_status_changed',
@@ -250,7 +265,7 @@ export async function archivePersonMedication(
   saveAllMedications(list);
 
   try {
-    await recordAuditLog({
+    await logAudit({
       family_id: med.family_id,
       actor_id: actorUserId,
       event_type: 'medication_archived',
@@ -309,7 +324,7 @@ export async function createPersonEncounter(
   saveAllEncounters(list);
 
   try {
-    await recordAuditLog({
+    await logAudit({
       family_id: input.family_id,
       actor_id: actorUserId,
       event_type: 'encounter_created',
@@ -352,7 +367,7 @@ export async function updatePersonEncounter(
   saveAllEncounters(list);
 
   try {
-    await recordAuditLog({
+    await logAudit({
       family_id: updated.family_id,
       actor_id: actorUserId,
       event_type: 'encounter_updated',
@@ -378,7 +393,7 @@ export async function archivePersonEncounter(
   saveAllEncounters(list);
 
   try {
-    await recordAuditLog({
+    await logAudit({
       family_id: enc.family_id,
       actor_id: actorUserId,
       event_type: 'encounter_archived',

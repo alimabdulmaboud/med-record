@@ -105,4 +105,36 @@ describe("Phase 2: Person Health Dashboard Integration", () => {
     expect(docs.length).toBe(1);
     expect(docs[0].document_type).toBe("lab_result");
   });
+
+  it("retrieves medications and doctor encounters on person dashboard", async () => {
+    const { getPersonMedications, getPersonEncounters, createPersonMedication, createPersonEncounter } =
+      await import("@/lib/family/medications-encounters-service");
+
+    await createPersonMedication({
+      family_id: adultAhmed.family_id,
+      person_id: adultAhmed.id,
+      name: "كونكور 5 مجم",
+      dose: "5 مجم",
+      frequency: "مرة يومياً",
+      status: "active",
+      reminder_enabled: true,
+      reminder_time: "08:30",
+    });
+
+    await createPersonEncounter({
+      family_id: adultAhmed.family_id,
+      person_id: adultAhmed.id,
+      doctor_name: "د. طارق البدري",
+      specialty: "باطنة وقلب وأوعية دموية",
+      diagnosis: "ضغط دم منتظم",
+    });
+
+    const meds = await getPersonMedications(adultAhmed.id);
+    expect(meds).toHaveLength(1);
+    expect(meds[0].name).toBe("كونكور 5 مجم");
+
+    const encs = await getPersonEncounters(adultAhmed.id);
+    expect(encs).toHaveLength(1);
+    expect(encs[0].doctor_name).toBe("د. طارق البدري");
+  });
 });

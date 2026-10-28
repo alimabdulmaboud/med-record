@@ -60,7 +60,18 @@ export function hasActiveViewerGrant(ctx: RLSContext, personId: string): boolean
 export interface EvaluateRLSParams {
   context: RLSContext;
   action: "SELECT" | "INSERT" | "UPDATE" | "DELETE";
-  table: "families" | "family_members" | "people" | "emergency_contacts" | "viewer_grants" | "audit_log" | "consents" | "person_measurements" | "person_documents";
+  table:
+    | "families"
+    | "family_members"
+    | "people"
+    | "emergency_contacts"
+    | "viewer_grants"
+    | "audit_log"
+    | "consents"
+    | "person_measurements"
+    | "person_documents"
+    | "person_medications"
+    | "person_encounters";
   record: any;
 }
 

@@ -24,6 +24,8 @@ import {
   Phone,
   FileText,
   AlertCircle,
+  Pill,
+  Stethoscope,
 } from "lucide-react";
 import type { Person } from "@/types/family";
 import type {
@@ -32,6 +34,15 @@ import type {
   MeasurementType,
 } from "@/types/measurements";
 import type { PersonDocument } from "@/types/documents";
+import type {
+  PersonMedication,
+  PersonEncounter,
+  CreateMedicationInput,
+  UpdateMedicationInput,
+  CreateEncounterInput,
+  UpdateEncounterInput,
+  MedicationStatus,
+} from "@/types/medications-encounters";
 import {
   getPersonMeasurements,
   getLatestVitalsSummary,
@@ -43,12 +54,28 @@ import {
   archivePersonDocument,
   seedRealisticMockDocuments,
 } from "@/lib/family/documents-service";
+import {
+  getPersonMedications,
+  getPersonEncounters,
+  createPersonMedication,
+  updatePersonMedication,
+  setMedicationStatus,
+  archivePersonMedication,
+  createPersonEncounter,
+  updatePersonEncounter,
+  archivePersonEncounter,
+  seedRealisticMockMedicationsAndEncounters,
+} from "@/lib/family/medications-encounters-service";
 import { calculatePersonAge } from "@/lib/family/service";
 import { QuickLogModal } from "@/components/family/QuickLogModal";
 import { MeasurementChart } from "@/components/family/MeasurementChart";
 import { GrowthChart } from "@/components/family/GrowthChart";
 import { DocumentVault } from "@/components/family/DocumentVault";
 import { DocumentUploadModal } from "@/components/family/DocumentUploadModal";
+import { MedicationModal } from "@/components/family/MedicationModal";
+import { EncounterModal } from "@/components/family/EncounterModal";
+import { MedicationsList } from "@/components/family/MedicationsList";
+import { EncountersTimeline } from "@/components/family/EncountersTimeline";
 
 const INITIAL_DEMO_PEOPLE: Person[] = [
   {
@@ -122,7 +149,16 @@ export default function PersonHealthDashboard({
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   const [activeChartType, setActiveChartType] = useState<MeasurementType>("blood_pressure");
-  const [activeTab, setActiveTab] = useState<"vitals" | "growth" | "history" | "documents">("vitals");
+  const [activeTab, setActiveTab] = useState<
+    "vitals" | "growth" | "history" | "documents" | "medications" | "encounters"
+  >("vitals");
+
+  const [medications, setMedications] = useState<PersonMedication[]>([]);
+  const [encounters, setEncounters] = useState<PersonEncounter[]>([]);
+  const [isMedicationModalOpen, setIsMedicationModalOpen] = useState(false);
+  const [editingMedication, setEditingMedication] = useState<PersonMedication | null>(null);
+  const [isEncounterModalOpen, setIsEncounterModalOpen] = useState(false);
+  const [editingEncounter, setEditingEncounter] = useState<PersonEncounter | null>(null);
 
   useEffect(() => {
     loadData();
@@ -170,18 +206,30 @@ export default function PersonHealthDashboard({
       await seedRealisticMockMeasurements([found, ...INITIAL_DEMO_PEOPLE]);
       await seedRealisticMockDocuments([found, ...INITIAL_DEMO_PEOPLE]);
 
-      // 2. Load measurements, documents & summary
+      const ageCalc = calculatePersonAge(found.birth_date);
+      await seedRealisticMockMedicationsAndEncounters(
+        personId,
+        found.family_id,
+        ageCalc.years
+      );
+
+      // 2. Load measurements, documents, medications, encounters & summary
       const mList = await getPersonMeasurements(personId);
       setMeasurements(mList);
 
       const dList = await getPersonDocuments(personId);
       setDocuments(dList);
 
+      const medsList = await getPersonMedications(personId);
+      setMedications(medsList);
+
+      const encsList = await getPersonEncounters(personId);
+      setEncounters(encsList);
+
       const s = await getLatestVitalsSummary(personId);
       setSummary(s);
 
-      const age = calculatePersonAge(found.birth_date);
-      if (age.isChild) {
+      if (ageCalc.isChild) {
         setActiveTab("growth");
       }
     } finally {
@@ -211,6 +259,48 @@ export default function PersonHealthDashboard({
   };
 
   const handleUploadSuccess = async () => {
+    await loadData();
+  };
+
+  const handleSaveMedication = async (
+    data: CreateMedicationInput | UpdateMedicationInput,
+    medicationId?: string
+  ) => {
+    if (medicationId) {
+      await updatePersonMedication(medicationId, data as UpdateMedicationInput);
+    } else {
+      await createPersonMedication(data as CreateMedicationInput);
+    }
+    await loadData();
+  };
+
+  const handleStatusChangeMedication = async (
+    id: string,
+    status: MedicationStatus
+  ) => {
+    await setMedicationStatus(id, status);
+    await loadData();
+  };
+
+  const handleArchiveMedication = async (id: string) => {
+    await archivePersonMedication(id);
+    await loadData();
+  };
+
+  const handleSaveEncounter = async (
+    data: CreateEncounterInput | UpdateEncounterInput,
+    encounterId?: string
+  ) => {
+    if (encounterId) {
+      await updatePersonEncounter(encounterId, data as UpdateEncounterInput);
+    } else {
+      await createPersonEncounter(data as CreateEncounterInput);
+    }
+    await loadData();
+  };
+
+  const handleArchiveEncounter = async (id: string) => {
+    await archivePersonEncounter(id);
     await loadData();
   };
 
@@ -521,6 +611,32 @@ export default function PersonHealthDashboard({
 
           <button
             type="button"
+            onClick={() => setActiveTab("medications")}
+            className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+              activeTab === "medications"
+                ? "bg-emerald-600 text-white shadow-sm shadow-emerald-600/20"
+                : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+            }`}
+          >
+            <Pill className="w-3.5 h-3.5" />
+            <span>الأدوية ({medications.length})</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("encounters")}
+            className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+              activeTab === "encounters"
+                ? "bg-blue-600 text-white shadow-sm shadow-blue-600/20"
+                : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+            }`}
+          >
+            <Stethoscope className="w-3.5 h-3.5" />
+            <span>الكشوفات ({encounters.length})</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveTab("documents")}
             className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all ${
               activeTab === "documents"
@@ -589,6 +705,39 @@ export default function PersonHealthDashboard({
 
             <MeasurementChart type={activeChartType} measurements={measurements} />
           </div>
+        )}
+
+        {/* Tab: Medications */}
+        {activeTab === "medications" && (
+          <MedicationsList
+            medications={medications}
+            onAddMedication={() => {
+              setEditingMedication(null);
+              setIsMedicationModalOpen(true);
+            }}
+            onEditMedication={(med) => {
+              setEditingMedication(med);
+              setIsMedicationModalOpen(true);
+            }}
+            onStatusChange={handleStatusChangeMedication}
+            onArchiveMedication={handleArchiveMedication}
+          />
+        )}
+
+        {/* Tab: Encounters */}
+        {activeTab === "encounters" && (
+          <EncountersTimeline
+            encounters={encounters}
+            onAddEncounter={() => {
+              setEditingEncounter(null);
+              setIsEncounterModalOpen(true);
+            }}
+            onEditEncounter={(enc) => {
+              setEditingEncounter(enc);
+              setIsEncounterModalOpen(true);
+            }}
+            onArchiveEncounter={handleArchiveEncounter}
+          />
         )}
 
         {/* Tab 3: Medical Documents Vault */}
@@ -714,6 +863,32 @@ export default function PersonHealthDashboard({
         onClose={() => setIsUploadModalOpen(false)}
         person={person}
         onSuccess={handleUploadSuccess}
+      />
+
+      {/* Medication Modal Trigger */}
+      <MedicationModal
+        isOpen={isMedicationModalOpen}
+        onClose={() => {
+          setIsMedicationModalOpen(false);
+          setEditingMedication(null);
+        }}
+        onSave={handleSaveMedication}
+        familyId={person.family_id}
+        personId={person.id}
+        initialMedication={editingMedication}
+      />
+
+      {/* Encounter Modal Trigger */}
+      <EncounterModal
+        isOpen={isEncounterModalOpen}
+        onClose={() => {
+          setIsEncounterModalOpen(false);
+          setEditingEncounter(null);
+        }}
+        onSave={handleSaveEncounter}
+        familyId={person.family_id}
+        personId={person.id}
+        initialEncounter={editingEncounter}
       />
     </div>
   );
