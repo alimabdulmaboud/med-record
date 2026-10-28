@@ -3,34 +3,75 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { getMedRecordRepository } from '@/lib/med-record/repository';
-import type { FamilyMember, Medication } from '@/types/med-record';
+import type { Person } from '@/types/family';
+import {
+  compileEmergencyCard,
+  type EmergencyCardPayload,
+} from '@/lib/family/emergency-service';
 import {
   AlertTriangle,
   PhoneCall,
   Activity,
   Pill,
-  ShieldAlert,
   ArrowRight,
+  ShieldAlert,
   Heart,
   Droplet,
   User,
   Users,
   Ambulance,
   FileText,
+  Clock,
+  Phone,
 } from 'lucide-react';
+
+const INITIAL_DEMO_PEOPLE: Person[] = [
+  {
+    id: "p-ahmed",
+    family_id: "fam-demo",
+    name: "أحمد مصطفى إبراهيم",
+    birth_date: "1988-06-15",
+    sex: "male",
+    blood_type: "A+",
+    allergies: ["بنسلين (Penicillin)"],
+    chronic_conditions: ["ارتفاع ضغط الدم (Hypertension)"],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: "p-sara",
+    family_id: "fam-demo",
+    name: "سارة أحمد مصطفى",
+    birth_date: "2021-04-10",
+    sex: "female",
+    blood_type: "A+",
+    allergies: ["الفول السوداني (Peanuts)"],
+    chronic_conditions: [],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: "p-yassin",
+    family_id: "fam-demo",
+    name: "ياسين أحمد مصطفى",
+    birth_date: "2025-08-20",
+    sex: "male",
+    blood_type: "O+",
+    allergies: [],
+    chronic_conditions: [],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+];
 
 export default function EmergencyMemberPage() {
   const params = useParams();
   const router = useRouter();
   const memberId = params?.memberId as string;
 
-  const [members, setMembers] = useState<FamilyMember[]>([]);
-  const [activeMember, setActiveMember] = useState<FamilyMember | null>(null);
-  const [medications, setMedications] = useState<Medication[]>([]);
+  const [people, setPeople] = useState<Person[]>([]);
+  const [emergencyCard, setEmergencyCard] = useState<EmergencyCardPayload | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
-  const repo = getMedRecordRepository();
 
   useEffect(() => {
     loadData();
@@ -39,14 +80,26 @@ export default function EmergencyMemberPage() {
   const loadData = async () => {
     try {
       setIsLoading(true);
-      const fam = await repo.getFamilyMembers();
-      setMembers(fam);
 
-      const target = fam.find(m => m.id === memberId) || fam.find(m => m.isPrimary) || fam[0];
-      if (target) {
-        setActiveMember(target);
-        const meds = await repo.getMedications(target.id);
-        setMedications(meds.filter(m => m.status === 'active'));
+      let list: Person[] = [];
+      try {
+        const stored = localStorage.getItem("med_family_people");
+        if (stored) {
+          list = JSON.parse(stored);
+        }
+      } catch {
+        // ignore
+      }
+
+      if (list.length === 0) {
+        list = INITIAL_DEMO_PEOPLE;
+      }
+      setPeople(list);
+
+      const targetPerson = list.find((p) => p.id === memberId) || list[0];
+      if (targetPerson) {
+        const card = await compileEmergencyCard(targetPerson);
+        setEmergencyCard(card);
       }
     } finally {
       setIsLoading(false);
@@ -57,7 +110,7 @@ export default function EmergencyMemberPage() {
     router.push(`/emergency/${id}`);
   };
 
-  if (isLoading || !activeMember) {
+  if (isLoading || !emergencyCard) {
     return (
       <div className="min-h-screen bg-rose-950 flex items-center justify-center p-4" dir="rtl">
         <div className="text-center text-white space-y-3">
@@ -68,76 +121,75 @@ export default function EmergencyMemberPage() {
     );
   }
 
-  const birthYear = new Date(activeMember.birthDate).getFullYear();
-  const currentYear = new Date().getFullYear();
-  const age = currentYear - birthYear;
+  const { person, blood_type, emergency_contacts, severe_allergies, chronic_conditions, active_medications, recent_vitals, hotlines } = emergencyCard;
 
   return (
     <div className="min-h-screen bg-slate-950 text-white font-sans p-4 sm:p-6 pb-20 select-none" dir="rtl">
       <div className="max-w-2xl mx-auto space-y-5">
-        {/* Top Navigation & Exit */}
+        {/* Top Navigation & Member Switcher */}
         <div className="flex items-center justify-between">
           <Link
-            href="/"
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-xl text-xs font-bold text-slate-300 hover:text-white transition-colors"
+            href={`/family/person/${person.id}`}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-xl text-xs font-bold text-slate-300 hover:text-white transition-colors cursor-pointer"
           >
             <ArrowRight className="w-4 h-4" />
-            <span>خروج من وضع الطوارئ</span>
+            <span>العودة للملف الصحي</span>
           </Link>
 
-          {/* Quick Family Member Switcher */}
+          {/* Quick Switcher among all people */}
           <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-800 rounded-xl p-1">
-            {members.map(m => (
+            {people.map((p) => (
               <button
-                key={m.id}
-                onClick={() => handleSwitchMember(m.id)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
-                  m.id === activeMember.id
+                key={p.id}
+                type="button"
+                onClick={() => handleSwitchMember(p.id)}
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  p.id === person.id
                     ? 'bg-rose-600 text-white shadow-xs'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                {m.fullName.split(' ')[0]}
+                {p.name.split(' ')[0]}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Emergency Header Badge */}
+        {/* High-Contrast Emergency Header Card */}
         <div className="bg-gradient-to-r from-rose-700 via-rose-600 to-red-700 p-5 rounded-3xl shadow-xl shadow-rose-950/50 border border-rose-500/40 relative overflow-hidden">
           <div className="flex items-start justify-between relative z-10">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-white/20 text-white backdrop-blur-xs">
-                  بطاقة الطوارئ الطبية السريعة • EMERGENCY
+                  بطاقة الطوارئ الطبية السريعة • EMERGENCY ID
                 </span>
               </div>
-              <h1 className="text-2xl font-black text-white">{activeMember.fullName}</h1>
+              <h1 className="text-2xl font-black text-white">{person.name}</h1>
               <p className="text-xs text-rose-100 mt-1">
-                {age} سنة • {activeMember.sex === 'male' ? 'ذكر' : 'أنثى'} •{' '}
-                {activeMember.relationshipLabel || (activeMember.relationship === 'self' ? 'صاحب الحساب' : activeMember.relationship)}
+                {emergencyCard.age_display} • {person.sex === 'male' ? 'ذكر' : 'أنثى'} •{' '}
+                {emergencyCard.is_child ? 'طفل' : 'بالغ'}
               </p>
             </div>
 
-            {/* Huge Blood Type Badge */}
+            {/* Prominent Blood Type Badge */}
             <div className="bg-white text-rose-700 px-4 py-2.5 rounded-2xl shadow-lg text-center shrink-0 border border-rose-200">
               <span className="text-[10px] block font-bold text-slate-500">فصيلة الدم</span>
               <span className="text-2xl font-black font-mono leading-none">
-                {activeMember.bloodType || '؟'}
+                {blood_type || '؟'}
               </span>
             </div>
           </div>
         </div>
 
-        {/* Egyptian Ambulance 123 Quick Dial */}
+        {/* 1-Tap Egyptian Emergency Ambulance Dial (123) */}
         <div className="bg-rose-900/40 border border-rose-500/40 p-4 rounded-3xl flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-rose-600 text-white flex items-center justify-center font-black animate-pulse">
               123
             </div>
             <div>
-              <h2 className="text-xs font-black text-rose-200">الإسعاف المصرية (Ambulance)</h2>
-              <p className="text-[11px] text-rose-300">طوارئ وزارة الصحة والسكان - مجاني 24 ساعة</p>
+              <h2 className="text-xs font-black text-rose-200">هيئة الإسعاف المصرية (Ambulance)</h2>
+              <p className="text-[11px] text-rose-300">طوارئ وزارة الصحة والسكان — مجاني 24 ساعة</p>
             </div>
           </div>
           <a
@@ -149,15 +201,15 @@ export default function EmergencyMemberPage() {
           </a>
         </div>
 
-        {/* Critical Allergies */}
+        {/* Severe Allergies Alert Box */}
         <div className="bg-slate-900/90 border border-rose-500/30 p-5 rounded-3xl space-y-3">
           <div className="flex items-center gap-2 text-rose-400 font-bold text-xs">
             <AlertTriangle className="w-4 h-4 text-rose-500" />
             <span>الحساسيات الدوائية والغذائية المهددة للحياة (Allergies)</span>
           </div>
-          {activeMember.allergies && activeMember.allergies.length > 0 ? (
+          {severe_allergies.length > 0 ? (
             <div className="flex flex-wrap gap-2">
-              {activeMember.allergies.map((alg, i) => (
+              {severe_allergies.map((alg, i) => (
                 <div
                   key={i}
                   className="px-3 py-2 bg-rose-950/70 border border-rose-600/50 text-rose-200 rounded-xl text-xs font-black flex items-center gap-1.5"
@@ -168,7 +220,7 @@ export default function EmergencyMemberPage() {
               ))}
             </div>
           ) : (
-            <p className="text-xs text-slate-400 font-medium">لا توجد حساسيات مسجلة</p>
+            <p className="text-xs text-slate-400 font-medium">لا توجد حساسية دوائية معروفة (NKDA)</p>
           )}
         </div>
 
@@ -178,9 +230,9 @@ export default function EmergencyMemberPage() {
             <Activity className="w-4 h-4" />
             <span>الأمراض المزمنة والتشخيصات الهامة (Chronic Conditions)</span>
           </div>
-          {activeMember.chronicConditions && activeMember.chronicConditions.length > 0 ? (
+          {chronic_conditions.length > 0 ? (
             <div className="flex flex-wrap gap-2">
-              {activeMember.chronicConditions.map((cond, i) => (
+              {chronic_conditions.map((cond, i) => (
                 <span
                   key={i}
                   className="px-3 py-1.5 bg-slate-800/80 border border-slate-700 text-slate-200 rounded-xl text-xs font-bold"
@@ -194,15 +246,15 @@ export default function EmergencyMemberPage() {
           )}
         </div>
 
-        {/* Active Medications */}
+        {/* Active Daily Medications */}
         <div className="bg-slate-900/90 border border-slate-800 p-5 rounded-3xl space-y-3">
           <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs">
             <Pill className="w-4 h-4" />
             <span>الأدوية الحالية المنتظمة (Current Medications)</span>
           </div>
-          {medications.length > 0 ? (
+          {active_medications.length > 0 ? (
             <div className="space-y-2">
-              {medications.map(med => (
+              {active_medications.map((med) => (
                 <div
                   key={med.id}
                   className="p-3 bg-slate-800/60 border border-slate-700/60 rounded-2xl flex items-center justify-between text-xs"
@@ -210,7 +262,7 @@ export default function EmergencyMemberPage() {
                   <div>
                     <span className="font-bold text-white block">{med.name}</span>
                     <span className="text-[11px] text-slate-400">
-                      {med.dose} • {med.frequency}
+                      {med.dose} • {med.frequency} {med.timing_notes ? `(${med.timing_notes})` : ''}
                     </span>
                   </div>
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">
@@ -220,33 +272,35 @@ export default function EmergencyMemberPage() {
               ))}
             </div>
           ) : (
-            <p className="text-xs text-slate-400 font-medium">لا توجد أدوية مسجلة حالياً</p>
+            <p className="text-xs text-slate-400 font-medium">لا توجد أدوية منتظمة مسجلة حالياً</p>
           )}
         </div>
 
-        {/* Emergency Contacts (Direct Tel Call) */}
+        {/* Emergency Contacts with Click-to-Call Buttons */}
         <div className="bg-slate-900/90 border border-slate-800 p-5 rounded-3xl space-y-3">
           <div className="flex items-center gap-2 text-amber-400 font-bold text-xs">
             <PhoneCall className="w-4 h-4" />
-            <span>جهات الاتصال للطوارئ وأقارب الدرجة الأولى (Emergency Contacts)</span>
+            <span>جهات الاتصال للطوارئ (Emergency Contacts)</span>
           </div>
-          {activeMember.emergencyContacts && activeMember.emergencyContacts.length > 0 ? (
+          {emergency_contacts.length > 0 ? (
             <div className="space-y-2">
-              {activeMember.emergencyContacts.map(c => (
+              {emergency_contacts.map((c) => (
                 <div
                   key={c.id}
                   className="p-3 bg-slate-800/60 border border-slate-700/70 rounded-2xl flex items-center justify-between"
                 >
                   <div>
                     <span className="text-xs font-bold text-white block">{c.name}</span>
-                    <span className="text-[11px] text-slate-400">صلة القرابة: {c.relation}</span>
+                    <span className="text-[11px] text-slate-400">
+                      صلة القرابة: {c.relationship} {c.is_primary ? '(جهة الاتصال الرئيسية)' : ''}
+                    </span>
                   </div>
                   <a
                     href={`tel:${c.phone}`}
                     className="flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer"
                   >
-                    <PhoneCall className="w-3.5 h-3.5" />
-                    <span className="font-mono">{c.phone}</span>
+                    <Phone className="w-3.5 h-3.5" />
+                    <span className="font-mono" dir="ltr">{c.phone}</span>
                   </a>
                 </div>
               ))}
@@ -256,14 +310,69 @@ export default function EmergencyMemberPage() {
           )}
         </div>
 
-        {/* Doctor Report Link Shortcut */}
+        {/* Recent Vitals if available */}
+        {recent_vitals && (
+          <div className="bg-slate-900/90 border border-slate-800 p-5 rounded-3xl space-y-3">
+            <div className="flex items-center gap-2 text-purple-400 font-bold text-xs">
+              <Clock className="w-4 h-4" />
+              <span>أحدث المؤشرات الحيوية المسجلة</span>
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-xs text-center">
+              {recent_vitals.blood_pressure && (
+                <div className="p-2 bg-slate-800/60 rounded-xl">
+                  <span className="text-[10px] text-slate-400 block">ضغط الدم</span>
+                  <span className="font-bold text-white">{recent_vitals.blood_pressure}</span>
+                </div>
+              )}
+              {recent_vitals.blood_sugar && (
+                <div className="p-2 bg-slate-800/60 rounded-xl">
+                  <span className="text-[10px] text-slate-400 block">سكر الدم</span>
+                  <span className="font-bold text-white">{recent_vitals.blood_sugar}</span>
+                </div>
+              )}
+              {recent_vitals.heart_rate && (
+                <div className="p-2 bg-slate-800/60 rounded-xl">
+                  <span className="text-[10px] text-slate-400 block">نبض القلب</span>
+                  <span className="font-bold text-white">{recent_vitals.heart_rate}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* National Emergency Hotlines Accordion/Section */}
+        <div className="bg-slate-900/90 border border-slate-800 p-5 rounded-3xl space-y-3">
+          <div className="flex items-center gap-2 text-rose-400 font-bold text-xs">
+            <Ambulance className="w-4 h-4" />
+            <span>خطوط الطوارئ الوطنية الرسمية (جمهورية مصر العربية)</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {hotlines.map((h) => (
+              <a
+                key={h.number}
+                href={`tel:${h.number}`}
+                className="p-2.5 bg-slate-800/70 hover:bg-slate-800 border border-slate-700/80 rounded-xl flex items-center justify-between transition-all cursor-pointer"
+              >
+                <div>
+                  <span className="text-xs font-bold text-white block">{h.nameAr}</span>
+                  <span className="text-[10px] text-slate-400">{h.descriptionAr}</span>
+                </div>
+                <span className="font-mono text-sm font-black text-rose-400 px-2 py-1 bg-rose-950/60 border border-rose-900 rounded-lg">
+                  {h.number}
+                </span>
+              </a>
+            ))}
+          </div>
+        </div>
+
+        {/* Full Doctor Report Link Shortcut */}
         <div className="text-center pt-2">
           <Link
-            href="/report"
+            href={`/family/person/${person.id}`}
             className="inline-flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-white transition-colors"
           >
             <FileText className="w-3.5 h-3.5" />
-            <span>عرض التقرير الطبي الكامل المعتمد للطبيب</span>
+            <span>عرض الملف الصحي والتقرير الطبي الكامل (A4 / IPS)</span>
           </Link>
         </div>
       </div>

@@ -1,25 +1,28 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getMedRecordRepository } from '@/lib/med-record/repository';
+import type { Person } from '@/types/family';
 
 export default function EmergencyIndexPage() {
   const router = useRouter();
-  const repo = getMedRecordRepository();
 
   useEffect(() => {
-    async function redirect() {
-      const members = await repo.getFamilyMembers();
-      if (members.length > 0) {
-        const primary = members.find(m => m.isPrimary) || members[0];
-        router.replace(`/emergency/${primary.id}`);
-      } else {
-        router.replace('/');
+    try {
+      const stored = localStorage.getItem("med_family_people");
+      if (stored) {
+        const people: Person[] = JSON.parse(stored);
+        if (people.length > 0) {
+          router.replace(`/emergency/${people[0].id}`);
+          return;
+        }
       }
+    } catch {
+      // fallback
     }
-    redirect();
-  }, [repo, router]);
+    // Default demo primary
+    router.replace(`/emergency/p-ahmed`);
+  }, [router]);
 
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 text-white" dir="rtl">
