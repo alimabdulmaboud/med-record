@@ -8,6 +8,7 @@ import type {
   DoctorReportEntity,
 } from '@/types/reports';
 import { ALL_REPORT_SECTIONS } from '@/lib/family/reports-service';
+import { calculatePersonAge } from '@/lib/family/service';
 import {
   FileText,
   X,
@@ -46,15 +47,17 @@ export function DoctorReportModal({
   });
   const [dateTo, setDateTo] = useState(todayStr);
 
+  const isChild = calculatePersonAge(person.birth_date).isChild;
+
   const [title, setTitle] = useState(
-    person.is_child
+    isChild
       ? `تقرير طبي موجز لطبيب الأطفال - ${person.name}`
       : `تقرير طبي موجز للطبيب - ${person.name}`
   );
 
   const [summaryNotes, setSummaryNotes] = useState('');
   const [selectedSections, setSelectedSections] = useState<ReportSectionId[]>(() => {
-    if (person.is_child) {
+    if (isChild) {
       return ['vitals', 'growth', 'medications', 'allergies', 'labs', 'visits', 'vaccinations'];
     }
     return ['vitals', 'medications', 'allergies', 'labs', 'visits'];
@@ -218,7 +221,7 @@ export function DoctorReportModal({
               {ALL_REPORT_SECTIONS.map((sec) => {
                 const isSelected = selectedSections.includes(sec.id);
                 // Hide growth or vaccinations if not child and no relevant data
-                if (sec.id === 'growth' && !person.is_child) return null;
+                if (sec.id === 'growth' && !isChild) return null;
 
                 return (
                   <button

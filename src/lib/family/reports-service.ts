@@ -22,6 +22,7 @@ import {
   type ScheduledVaccine,
   type VaccinationStats,
 } from '@/lib/family/vaccinations-service';
+import { calculatePersonAge } from '@/lib/family/service';
 import { getPersonMeasurements } from '@/lib/family/measurements-service';
 import { getPersonMedications, getPersonEncounters } from '@/lib/family/medications-encounters-service';
 import { getPersonDocuments } from '@/lib/family/documents-service';
@@ -253,8 +254,9 @@ export async function compilePersonDoctorReport(
     getPersonDocuments(person.id),
   ]);
 
+  const isChild = calculatePersonAge(person.birth_date).isChild;
   let vaccinationData: { stats: VaccinationStats; recent: ScheduledVaccine[] } | undefined = undefined;
-  if (person.is_child && person.birth_date) {
+  if (isChild && person.birth_date) {
     try {
       const vacResult = await getPersonVaccinationsSchedule(person.id, person.birth_date);
       vaccinationData = {
@@ -293,10 +295,11 @@ export async function createDoctorReport(
     id: input.person_id,
     family_id: input.family_id,
     name: 'المريض',
-    is_child: false,
-    gender: 'male',
+    sex: 'male',
+    blood_type: 'unknown',
+    allergies: [],
+    chronic_conditions: [],
     birth_date: '1985-05-15',
-    relationship_to_primary: 'self',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
@@ -537,7 +540,7 @@ export async function seedRealisticMockReports(
   fromDate.setMonth(fromDate.getMonth() - 3);
   const toDate = new Date();
 
-  const isChild = Boolean(person.is_child);
+  const isChild = calculatePersonAge(person.birth_date).isChild;
   const sections: ReportSectionId[] = isChild
     ? ['vitals', 'growth', 'medications', 'allergies', 'labs', 'visits', 'vaccinations']
     : ['vitals', 'medications', 'allergies', 'labs', 'visits'];

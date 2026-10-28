@@ -2,6 +2,7 @@
 
 import React from 'react';
 import type { CompiledDoctorReportPayload, DoctorReportEntity } from '@/types/reports';
+import { calculatePersonAge } from '@/lib/family/service';
 import {
   Activity,
   AlertTriangle,
@@ -65,7 +66,8 @@ export function DoctorReportView({
   };
 
   const ageStr = calculateAge(person?.birth_date);
-  const genderAr = person?.gender === 'female' ? 'أنثى' : 'ذكر';
+  const isChild = calculatePersonAge(person?.birth_date).isChild;
+  const genderAr = person?.sex === 'female' ? 'أنثى' : 'ذكر';
 
   return (
     <div className="space-y-4" dir="rtl">
@@ -153,7 +155,7 @@ export function DoctorReportView({
           <div>
             <span className="text-[10px] text-slate-400 block font-bold">صلة القرابة</span>
             <span className="font-bold text-slate-800">
-              {person?.is_child ? 'طفل' : person?.relationship_to_primary === 'self' ? 'صاحب الحساب' : 'فرد أسرة'}
+              {isChild ? 'طفل' : 'بالغ'}
             </span>
           </div>
         </div>
@@ -202,24 +204,40 @@ export function DoctorReportView({
                 <tbody className="divide-y divide-slate-100">
                   {measurements.slice(0, 10).map((m) => {
                     const isAbnormal = Boolean(m.is_abnormal);
-                    const valDisplay =
-                      m.type === 'blood_pressure'
-                        ? `${m.systolic}/${m.diastolic} mmHg`
-                        : `${m.value || ''} ${m.unit || ''}`;
+                    let valDisplay = '';
+                    if (m.measurement_type === 'blood_pressure') {
+                      valDisplay = `${m.values?.systolic}/${m.values?.diastolic} mmHg`;
+                    } else if (m.measurement_type === 'blood_glucose') {
+                      valDisplay = `${m.values?.glucose} ${m.unit || 'mg/dL'}`;
+                    } else if (m.measurement_type === 'weight') {
+                      valDisplay = `${m.values?.weight_kg} كجم`;
+                    } else if (m.measurement_type === 'height') {
+                      valDisplay = `${m.values?.height_cm} سم`;
+                    } else if (m.measurement_type === 'spo2') {
+                      valDisplay = `${m.values?.spo2}%`;
+                    } else if (m.measurement_type === 'temperature') {
+                      valDisplay = `${m.values?.temperature_c}°C`;
+                    } else if (m.measurement_type === 'heart_rate') {
+                      valDisplay = `${m.values?.heart_rate} bpm`;
+                    } else {
+                      valDisplay = `${m.values?.weight_kg ?? m.values?.height_cm ?? ''} ${m.unit || ''}`;
+                    }
+
                     const typeLabel =
-                      m.type === 'blood_pressure'
+                      m.label_ar ||
+                      (m.measurement_type === 'blood_pressure'
                         ? 'ضغط الدم'
-                        : m.type === 'blood_sugar'
+                        : m.measurement_type === 'blood_glucose'
                         ? 'سكر الدم'
-                        : m.type === 'weight'
+                        : m.measurement_type === 'weight'
                         ? 'الوزن'
-                        : m.type === 'height'
+                        : m.measurement_type === 'height'
                         ? 'الطول'
-                        : m.type === 'spo2'
+                        : m.measurement_type === 'spo2'
                         ? 'تشبع الأكسجين SpO2'
-                        : m.type === 'temperature'
+                        : m.measurement_type === 'temperature'
                         ? 'حرارة الجسم'
-                        : m.type;
+                        : m.measurement_type);
 
                     return (
                       <tr key={m.id} className={isAbnormal ? 'bg-rose-50/50' : ''}>
@@ -249,7 +267,7 @@ export function DoctorReportView({
         )}
 
         {/* Section 2: Pediatric Growth Metrics (if child) */}
-        {included_sections.includes('growth') && person?.is_child && (
+        {included_sections.includes('growth') && isChild && (
           <div className="space-y-2">
             <div className="flex items-center gap-2 border-b border-slate-200 pb-1.5">
               <Scale className="w-4 h-4 text-emerald-700" />
@@ -305,11 +323,11 @@ export function DoctorReportView({
                       <tr key={med.id}>
                         <td className="p-2">
                           <span className="font-black text-slate-900 block">{med.name}</span>
-                          <span className="text-[11px] text-slate-500">{med.dosage}</span>
+                          <span className="text-[11px] text-slate-500">{med.dose}</span>
                         </td>
                         <td className="p-2 font-bold text-slate-700">{med.frequency}</td>
-                        <td className="p-2 text-slate-600">{med.prescribing_doctor || '-'}</td>
-                        <td className="p-2 text-slate-600">{med.instructions || '-'}</td>
+                        <td className="p-2 text-slate-600">{med.prescribed_by || '-'}</td>
+                        <td className="p-2 text-slate-600">{med.timing_notes || med.notes || '-'}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -368,10 +386,10 @@ export function DoctorReportView({
                         <td className="p-2 font-mono text-slate-600">{enc.visit_date}</td>
                         <td className="p-2">
                           <span className="font-bold text-slate-900 block">{enc.doctor_name}</span>
-                          <span className="text-[10px] text-slate-500">{enc.clinic_name}</span>
+                          <span className="text-[10px] text-slate-500">{enc.facility_name || enc.specialty}</span>
                         </td>
-                        <td className="p-2 font-bold text-slate-800">{enc.diagnosis || enc.reason_for_visit || '-'}</td>
-                        <td className="p-2 text-slate-600">{enc.treatment_plan || enc.clinical_notes || '-'}</td>
+                        <td className="p-2 font-bold text-slate-800">{enc.diagnosis || enc.chief_complaint || '-'}</td>
+                        <td className="p-2 text-slate-600">{enc.notes || '-'}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -421,10 +439,10 @@ export function DoctorReportView({
 
             <div className="flex items-center justify-between bg-emerald-50 p-3 rounded-2xl border border-emerald-200 text-xs">
               <span className="font-bold text-emerald-900">
-                نسبة إنجاز التطعيمات الإلزامية: {vaccinations.stats.percentComplete}%
+                نسبة إنجاز التطعيمات الإلزامية: {vaccinations.stats.percentage}%
               </span>
               <span className="text-emerald-800 font-bold">
-                مكتمل: {vaccinations.stats.completedCount} / متأخر: {vaccinations.stats.overdueCount}
+                مكتمل: {vaccinations.stats.completed} / متأخر: {vaccinations.stats.overdue}
               </span>
             </div>
           </div>

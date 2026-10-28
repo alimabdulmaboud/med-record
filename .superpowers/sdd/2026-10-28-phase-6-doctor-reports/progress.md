@@ -7,8 +7,8 @@ Pre-flight scan:
 - Task 4 consumes Task 2 & 3 components, integrates with `/family/person/[id]/page.tsx`, `/report/page.tsx`, and `/share/[token]/page.tsx`
 - Task 5 verifies with full test suite, E2E spec, TypeScript check and Next.js build
 Pre-flight: no shared interfaces conflict
-Task 1: ready
-Task 2: pending
-Task 3: pending
-Task 4: pending
-Task 5: pending
+Task 1: complete (commit 7c071df)
+Task 2: complete (commit 96a98e5)
+Task 3: complete (commit 8d27a93)
+Task 4: complete (commit af51f3b)
+Task 5: complete (verified 54/54 test files, 339 passed; tsc --noEmit passed; build 33/33 static pages passed)
