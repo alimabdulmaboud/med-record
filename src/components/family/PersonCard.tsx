@@ -31,9 +31,13 @@ export function PersonCard({ person, onArchive }: PersonCardProps) {
       <div>
         {/* Header: Avatar, Name, Relationship, and Edit Action */}
         <div className="flex items-start justify-between gap-3 mb-4">
-          <div className="flex items-center gap-3">
+          <Link
+            href={`/family/person/${person.id}`}
+            className="flex items-center gap-3 group/avatar"
+            title="عرض الملف الصحي الكامل والقياسات"
+          >
             <div
-              className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-lg text-white shadow-sm ${
+              className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-lg text-white shadow-sm transition-transform group-hover/avatar:scale-105 ${
                 age.isChild
                   ? "bg-amber-500 shadow-amber-500/20"
                   : isMale
@@ -45,7 +49,7 @@ export function PersonCard({ person, onArchive }: PersonCardProps) {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-extrabold text-base md:text-lg text-slate-900 dark:text-white">
+                <h3 className="font-extrabold text-base md:text-lg text-slate-900 dark:text-white group-hover/avatar:text-teal-600 dark:group-hover/avatar:text-teal-400 transition-colors">
                   {person.name}
                 </h3>
                 {person.linked_user_id && (
@@ -70,7 +74,7 @@ export function PersonCard({ person, onArchive }: PersonCardProps) {
                 )}
               </div>
             </div>
-          </div>
+          </Link>
 
           <Link
             href={`/family/person/${person.id}/edit`}
@@ -127,20 +131,19 @@ export function PersonCard({ person, onArchive }: PersonCardProps) {
         </div>
       </div>
 
-      {/* Quick Action Placeholders (Phase 2+) */}
+      {/* Quick Actions (Phase 2) */}
       <div className="pt-4 border-t border-slate-100 dark:border-slate-800/80">
         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-          إجراءات سريعة (مرحلة 2)
+          إجراءات سريعة
         </div>
         <div className="grid grid-cols-3 gap-2">
-          <button
-            type="button"
-            onClick={() => alert("تسجيل القياسات والضغط والسكر سينطلق في المرحلة الثانية")}
-            className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-teal-50 dark:hover:bg-teal-950 text-slate-600 dark:text-slate-300 hover:text-teal-700 dark:hover:text-teal-300 flex flex-col items-center gap-1 text-[11px] font-medium transition-colors"
+          <Link
+            href={`/family/person/${person.id}`}
+            className="p-2 rounded-xl bg-teal-50 dark:bg-teal-950/60 hover:bg-teal-100 dark:hover:bg-teal-900 text-teal-800 dark:text-teal-200 flex flex-col items-center gap-1 text-[11px] font-bold transition-colors"
           >
             <HeartPulse className="w-4 h-4 text-teal-600" />
-            <span>تسجيل قياس</span>
-          </button>
+            <span>الملف والقياس</span>
+          </Link>
 
           <button
             type="button"

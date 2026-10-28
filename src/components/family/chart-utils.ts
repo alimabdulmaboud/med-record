@@ -72,12 +72,12 @@ export function transformGrowthToWHOCurves(
     .filter((r) => r.measurement_type === 'growth_entry' || r.measurement_type === metric)
     .map((r) => ({
       id: r.id,
-      member_id: r.person_id,
-      age_in_months: r.percentiles?.age_in_months ?? 0,
-      weight_kg: r.values.weight_kg,
-      height_cm: r.values.height_cm,
-      head_circumference_cm: r.values.head_circumference_cm,
-      recorded_at: r.recorded_at,
+      memberId: r.person_id,
+      ageInMonths: r.percentiles?.age_in_months ?? 0,
+      weightKg: r.values.weight_kg,
+      heightCm: r.values.height_cm,
+      headCircumferenceCm: r.values.head_circumference_cm,
+      recordedAt: r.recorded_at,
     }));
 
   return generateWHOGrowthCurveData(metric, sex, growthRecords);
