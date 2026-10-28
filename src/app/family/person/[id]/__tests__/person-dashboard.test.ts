@@ -5,6 +5,11 @@ import {
   getLatestVitalsSummary,
   clearMeasurementsStore,
 } from "@/lib/family/measurements-service";
+import {
+  addPersonDocument,
+  getPersonDocuments,
+  clearDocumentsStore,
+} from "@/lib/family/documents-service";
 import type { Person } from "@/types/family";
 
 describe("Phase 2: Person Health Dashboard Integration", () => {
@@ -36,6 +41,7 @@ describe("Phase 2: Person Health Dashboard Integration", () => {
 
   beforeEach(() => {
     clearMeasurementsStore();
+    clearDocumentsStore();
   });
 
   it("aggregates dashboard vitals summary and highlights critical values", async () => {
@@ -82,5 +88,21 @@ describe("Phase 2: Person Health Dashboard Integration", () => {
     expect(measurements.length).toBe(1);
     expect(measurements[0].percentiles?.weight_for_age_percentile).toBeDefined();
     expect(measurements[0].percentiles?.height_for_age_percentile).toBeDefined();
+  });
+
+  it("retrieves medical documents and categories for person dashboard", async () => {
+    await addPersonDocument({
+      family_id: adultAhmed.family_id,
+      person_id: adultAhmed.id,
+      title: "تحليل دم شامل CBC",
+      document_type: "lab_result",
+      file_name: "cbc.pdf",
+      file_type: "application/pdf",
+      file_size_bytes: 400000,
+    });
+
+    const docs = await getPersonDocuments(adultAhmed.id);
+    expect(docs.length).toBe(1);
+    expect(docs[0].document_type).toBe("lab_result");
   });
 });

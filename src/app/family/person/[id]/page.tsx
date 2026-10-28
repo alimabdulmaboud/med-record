@@ -31,16 +31,24 @@ import type {
   PersonVitalsSummary,
   MeasurementType,
 } from "@/types/measurements";
+import type { PersonDocument } from "@/types/documents";
 import {
   getPersonMeasurements,
   getLatestVitalsSummary,
   archivePersonMeasurement,
   seedRealisticMockMeasurements,
 } from "@/lib/family/measurements-service";
+import {
+  getPersonDocuments,
+  archivePersonDocument,
+  seedRealisticMockDocuments,
+} from "@/lib/family/documents-service";
 import { calculatePersonAge } from "@/lib/family/service";
 import { QuickLogModal } from "@/components/family/QuickLogModal";
 import { MeasurementChart } from "@/components/family/MeasurementChart";
 import { GrowthChart } from "@/components/family/GrowthChart";
+import { DocumentVault } from "@/components/family/DocumentVault";
+import { DocumentUploadModal } from "@/components/family/DocumentUploadModal";
 
 const INITIAL_DEMO_PEOPLE: Person[] = [
   {
@@ -104,14 +112,17 @@ export default function PersonHealthDashboard({
 
   const [person, setPerson] = useState<Person | null>(null);
   const [measurements, setMeasurements] = useState<PersonMeasurement[]>([]);
+  const [documents, setDocuments] = useState<PersonDocument[]>([]);
   const [summary, setSummary] = useState<PersonVitalsSummary | null>(null);
   const [loading, setLoading] = useState(true);
 
   const [isQuickLogOpen, setIsQuickLogOpen] = useState(false);
   const [quickLogInitialType, setQuickLogInitialType] = useState<MeasurementType | undefined>();
 
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+
   const [activeChartType, setActiveChartType] = useState<MeasurementType>("blood_pressure");
-  const [activeTab, setActiveTab] = useState<"vitals" | "growth" | "history">("vitals");
+  const [activeTab, setActiveTab] = useState<"vitals" | "growth" | "history" | "documents">("vitals");
 
   useEffect(() => {
     loadData();
@@ -155,12 +166,16 @@ export default function PersonHealthDashboard({
 
       setPerson(found);
 
-      // Seed mock measurements if empty
+      // Seed mock measurements & documents if empty
       await seedRealisticMockMeasurements([found, ...INITIAL_DEMO_PEOPLE]);
+      await seedRealisticMockDocuments([found, ...INITIAL_DEMO_PEOPLE]);
 
-      // 2. Load measurements & summary
+      // 2. Load measurements, documents & summary
       const mList = await getPersonMeasurements(personId);
       setMeasurements(mList);
+
+      const dList = await getPersonDocuments(personId);
+      setDocuments(dList);
 
       const s = await getLatestVitalsSummary(personId);
       setSummary(s);
@@ -186,6 +201,16 @@ export default function PersonHealthDashboard({
   const handleArchive = async (id: string) => {
     if (!confirm("هل أنت متأكد من حذف هذه القراءة؟")) return;
     await archivePersonMeasurement(id);
+    await loadData();
+  };
+
+  const handleDeleteDocument = async (id: string) => {
+    if (!confirm("هل أنت متأكد من حذف هذا المستند؟ يمكنك استعادته لاحقاً.")) return;
+    await archivePersonDocument(id);
+    await loadData();
+  };
+
+  const handleUploadSuccess = async () => {
     await loadData();
   };
 
@@ -307,15 +332,26 @@ export default function PersonHealthDashboard({
             </div>
           </div>
 
-          {/* Primary Quick Log Action */}
-          <button
-            type="button"
-            onClick={() => handleOpenQuickLog()}
-            className="w-full md:w-auto px-6 py-3.5 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-sm shadow-lg shadow-teal-600/20 flex items-center justify-center gap-2 transition-all transform active:scale-95"
-          >
-            <Plus className="w-5 h-5" />
-            <span>تسجيل قياس سريع (&lt; 10 ثوانٍ)</span>
-          </button>
+          {/* Primary Quick Actions */}
+          <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full md:w-auto">
+            <button
+              type="button"
+              onClick={() => setIsUploadModalOpen(true)}
+              className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-teal-50 dark:bg-teal-950/60 hover:bg-teal-100 text-teal-800 dark:text-teal-200 border border-teal-200 dark:border-teal-900 font-extrabold text-xs shadow-xs flex items-center justify-center gap-2 transition-all"
+            >
+              <FileText className="w-4 h-4 text-teal-600" />
+              <span>رفع مستند طبي</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleOpenQuickLog()}
+              className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs shadow-md shadow-teal-600/20 flex items-center justify-center gap-2 transition-all transform active:scale-95"
+            >
+              <Plus className="w-4 h-4" />
+              <span>تسجيل قياس سريع (&lt; 10 ثوانٍ)</span>
+            </button>
+          </div>
         </div>
 
         {/* Abnormal Highlights Warning Banner */}
@@ -485,6 +521,18 @@ export default function PersonHealthDashboard({
 
           <button
             type="button"
+            onClick={() => setActiveTab("documents")}
+            className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all ${
+              activeTab === "documents"
+                ? "bg-teal-600 text-white shadow-sm shadow-teal-600/20"
+                : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+            }`}
+          >
+            المستندات والتحاليل ({documents.length})
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveTab("history")}
             className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all ${
               activeTab === "history"
@@ -543,7 +591,16 @@ export default function PersonHealthDashboard({
           </div>
         )}
 
-        {/* Tab 3: History Table */}
+        {/* Tab 3: Medical Documents Vault */}
+        {activeTab === "documents" && (
+          <DocumentVault
+            documents={documents}
+            onUploadClick={() => setIsUploadModalOpen(true)}
+            onDeleteDocument={handleDeleteDocument}
+          />
+        )}
+
+        {/* Tab 4: History Table */}
         {activeTab === "history" && (
           <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
             <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
@@ -649,6 +706,14 @@ export default function PersonHealthDashboard({
         person={person}
         initialType={quickLogInitialType}
         onSuccess={handleQuickLogSuccess}
+      />
+
+      {/* Document Upload Modal Trigger */}
+      <DocumentUploadModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        person={person}
+        onSuccess={handleUploadSuccess}
       />
     </div>
   );
