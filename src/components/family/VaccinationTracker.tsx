@@ -21,7 +21,7 @@ import type {
 import type { VaccinationStatus } from "@/types/vaccinations";
 import {
   VACCINE_STATUS_CONFIG,
-  filterVaccinesByTab,
+  filterVaccinesByStatus,
 } from "./vaccination-tracker-utils";
 
 interface VaccinationTrackerProps {

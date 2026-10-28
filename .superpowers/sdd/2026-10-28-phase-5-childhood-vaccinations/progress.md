@@ -10,7 +10,8 @@ Pre-flight: no shared interfaces conflict
 Task 1: complete (migration, types, RLS test suite: 7 passed)
 Task 2: complete (vaccinations-service.ts & tests: 5 passed)
 Task 3: complete (RecordVaccinationModal, VaccinationTracker, UI utils & tests: 2 passed)
-Task 4: ready
+Task 4: complete (person dashboard tab, modal wiring, tests: 5 passed)
+Task 5: ready
 Task 3: pending
 Task 4: pending
 Task 5: pending

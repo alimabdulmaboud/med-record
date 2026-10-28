@@ -21,6 +21,7 @@ import {
   Calendar,
   Sparkles,
   Shield,
+  ShieldCheck,
   Phone,
   FileText,
   AlertCircle,
@@ -66,6 +67,14 @@ import {
   archivePersonEncounter,
   seedRealisticMockMedicationsAndEncounters,
 } from "@/lib/family/medications-encounters-service";
+import {
+  getPersonVaccinationsSchedule,
+  recordVaccineAdministered,
+  seedRealisticMockVaccinations,
+  type ScheduledVaccine,
+  type MilestoneGroup,
+  type VaccinationStats,
+} from "@/lib/family/vaccinations-service";
 import { calculatePersonAge } from "@/lib/family/service";
 import { QuickLogModal } from "@/components/family/QuickLogModal";
 import { MeasurementChart } from "@/components/family/MeasurementChart";
@@ -76,6 +85,8 @@ import { MedicationModal } from "@/components/family/MedicationModal";
 import { EncounterModal } from "@/components/family/EncounterModal";
 import { MedicationsList } from "@/components/family/MedicationsList";
 import { EncountersTimeline } from "@/components/family/EncountersTimeline";
+import { VaccinationTracker } from "@/components/family/VaccinationTracker";
+import { RecordVaccinationModal } from "@/components/family/RecordVaccinationModal";
 
 const INITIAL_DEMO_PEOPLE: Person[] = [
   {
@@ -150,7 +161,13 @@ export default function PersonHealthDashboard({
 
   const [activeChartType, setActiveChartType] = useState<MeasurementType>("blood_pressure");
   const [activeTab, setActiveTab] = useState<
-    "vitals" | "growth" | "history" | "documents" | "medications" | "encounters"
+    | "vitals"
+    | "growth"
+    | "history"
+    | "documents"
+    | "medications"
+    | "encounters"
+    | "vaccinations"
   >("vitals");
 
   const [medications, setMedications] = useState<PersonMedication[]>([]);
@@ -159,6 +176,11 @@ export default function PersonHealthDashboard({
   const [editingMedication, setEditingMedication] = useState<PersonMedication | null>(null);
   const [isEncounterModalOpen, setIsEncounterModalOpen] = useState(false);
   const [editingEncounter, setEditingEncounter] = useState<PersonEncounter | null>(null);
+
+  const [vaccinationMilestones, setVaccinationMilestones] = useState<MilestoneGroup[]>([]);
+  const [vaccinationStats, setVaccinationStats] = useState<VaccinationStats | null>(null);
+  const [isRecordVaccineModalOpen, setIsRecordVaccineModalOpen] = useState(false);
+  const [selectedVaccineForModal, setSelectedVaccineForModal] = useState<ScheduledVaccine | null>(null);
 
   useEffect(() => {
     loadData();
@@ -230,6 +252,10 @@ export default function PersonHealthDashboard({
       setSummary(s);
 
       if (ageCalc.isChild) {
+        await seedRealisticMockVaccinations(personId, found.family_id, found.birth_date);
+        const vacData = await getPersonVaccinationsSchedule(personId, found.birth_date);
+        setVaccinationMilestones(vacData.milestones);
+        setVaccinationStats(vacData.stats);
         setActiveTab("growth");
       }
     } finally {
@@ -301,6 +327,24 @@ export default function PersonHealthDashboard({
 
   const handleArchiveEncounter = async (id: string) => {
     await archivePersonEncounter(id);
+    await loadData();
+  };
+
+  const handleSaveVaccination = async (data: {
+    family_id: string;
+    person_id: string;
+    vaccine_code: string;
+    vaccine_name: string;
+    target_disease: string;
+    dose_number: number;
+    age_milestone_months: number;
+    scheduled_date: string;
+    administered_date: string;
+    batch_number?: string;
+    administered_by?: string;
+    notes?: string;
+  }) => {
+    await recordVaccineAdministered(data);
     await loadData();
   };
 
@@ -597,6 +641,23 @@ export default function PersonHealthDashboard({
             </button>
           )}
 
+          {age.isChild && (
+            <button
+              type="button"
+              onClick={() => setActiveTab("vaccinations")}
+              className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                activeTab === "vaccinations"
+                  ? "bg-purple-600 text-white shadow-sm shadow-purple-600/20"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+              }`}
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>
+                التطعيمات {vaccinationStats ? `(${vaccinationStats.completed}/${vaccinationStats.total})` : ""}
+              </span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={() => setActiveTab("vitals")}
@@ -663,6 +724,19 @@ export default function PersonHealthDashboard({
         {/* Tab 1: Growth Curves (Child) */}
         {activeTab === "growth" && age.isChild && (
           <GrowthChart sex={person.sex} childName={person.name} records={measurements} />
+        )}
+
+        {/* Tab: Childhood Vaccinations */}
+        {activeTab === "vaccinations" && age.isChild && vaccinationStats && (
+          <VaccinationTracker
+            milestones={vaccinationMilestones}
+            stats={vaccinationStats}
+            childName={person.name}
+            onRecordVaccine={(vac) => {
+              setSelectedVaccineForModal(vac);
+              setIsRecordVaccineModalOpen(true);
+            }}
+          />
         )}
 
         {/* Tab 2: Vitals Charts */}
@@ -889,6 +963,19 @@ export default function PersonHealthDashboard({
         familyId={person.family_id}
         personId={person.id}
         initialEncounter={editingEncounter}
+      />
+
+      {/* Record Vaccination Modal Trigger */}
+      <RecordVaccinationModal
+        isOpen={isRecordVaccineModalOpen}
+        onClose={() => {
+          setIsRecordVaccineModalOpen(false);
+          setSelectedVaccineForModal(null);
+        }}
+        vaccine={selectedVaccineForModal}
+        familyId={person.family_id}
+        personId={person.id}
+        onSave={handleSaveVaccination}
       />
     </div>
   );

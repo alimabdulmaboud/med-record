@@ -137,4 +137,38 @@ describe("Phase 2: Person Health Dashboard Integration", () => {
     expect(encs).toHaveLength(1);
     expect(encs[0].doctor_name).toBe("د. طارق البدري");
   });
+
+  it("loads and manages child vaccination schedule according to official Egyptian MOH milestones", async () => {
+    const { getPersonVaccinationsSchedule, recordVaccineAdministered } =
+      await import("@/lib/family/vaccinations-service");
+
+    const scheduleData = await getPersonVaccinationsSchedule(
+      childSara.id,
+      childSara.birth_date
+    );
+
+    expect(scheduleData.schedule.length).toBeGreaterThanOrEqual(10);
+    expect(scheduleData.milestones.length).toBeGreaterThanOrEqual(5);
+
+    // Record one vaccine as administered
+    await recordVaccineAdministered({
+      family_id: childSara.family_id,
+      person_id: childSara.id,
+      vaccine_code: "BCG",
+      vaccine_name: "BCG (الدرن)",
+      target_disease: "الدرن",
+      dose_number: 1,
+      age_milestone_months: 0,
+      scheduled_date: childSara.birth_date,
+      administered_date: childSara.birth_date,
+      administered_by: "مكتب صحة النزهة",
+    });
+
+    const updated = await getPersonVaccinationsSchedule(
+      childSara.id,
+      childSara.birth_date
+    );
+    expect(updated.stats.completed).toBe(1);
+    expect(updated.stats.percentage).toBeGreaterThan(0);
+  });
 });
