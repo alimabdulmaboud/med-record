@@ -9,7 +9,8 @@ Pre-flight scan:
 Pre-flight: no shared interfaces conflict
 Task 1: complete (migration, types, RLS test suite: 7 passed)
 Task 2: complete (medications-encounters-service.ts & tests: 10 passed)
-Task 3: ready
+Task 3: complete (MedicationModal, EncounterModal, MedicationsList, EncountersTimeline: 5 passed)
+Task 4: ready
 Task 3: pending
 Task 4: pending
 Task 5: pending
