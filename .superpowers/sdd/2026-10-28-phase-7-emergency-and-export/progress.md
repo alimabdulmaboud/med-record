@@ -7,8 +7,8 @@ Pre-flight scan:
 - Task 4 updates `src/app/family/settings/page.tsx` and `/api/family/export`
 - Task 5 verifies end-to-end with Vitest, Playwright, tsc and Next.js build
 Pre-flight: clean, builds upon all completed phases 1-6
-Task 1: ready
-Task 2: pending
-Task 3: pending
-Task 4: pending
-Task 5: pending
+Task 1: completed
+Task 2: completed
+Task 3: completed
+Task 4: completed
+Task 5: completed
