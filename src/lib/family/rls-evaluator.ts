@@ -103,6 +103,18 @@ export function evaluateFamilyRLS(params: EvaluateRLSParams): boolean {
     }
   }
 
+  if (table === "person_medications" || table === "person_encounters") {
+    if (action === "SELECT") {
+      return (
+        isFamilyManager(context, record.family_id) ||
+        hasActiveViewerGrant(context, record.person_id)
+      );
+    }
+    if (action === "INSERT" || action === "UPDATE" || action === "DELETE") {
+      return isFamilyManager(context, record.family_id);
+    }
+  }
+
   if (table === "families") {
     if (action === "SELECT") {
       return isFamilyMember(context, record.id);
