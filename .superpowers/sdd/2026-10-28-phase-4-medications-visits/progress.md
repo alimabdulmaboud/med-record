@@ -11,7 +11,8 @@ Task 1: complete (migration, types, RLS test suite: 7 passed)
 Task 2: complete (medications-encounters-service.ts & tests: 10 passed)
 Task 3: complete (MedicationModal, EncounterModal, MedicationsList, EncountersTimeline: 5 passed)
 Task 4: complete (person dashboard tabs, modals wiring, type-check passed: 4 passed)
-Task 5: ready
+Task 5: complete (full suite: 48 test files, 301 tests passed, type-check passed, next build passed 33/33, e2e spec added)
+All tasks complete.
 Task 3: pending
 Task 4: pending
 Task 5: pending
