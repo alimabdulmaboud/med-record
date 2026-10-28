@@ -39,12 +39,12 @@
 - Produces: TypeScript types `FamilyMember`, `Measurement`, `GrowthMeasurement`, `Medication`, `MedicalDocument`, `Encounter`, `Vaccination`, `DoctorReport`, `ReportShare`
 - Produces: `mapToFHIRIPS(member: FamilyMember, reportData: DoctorReportData): FHIRBundle`
 
-- [ ] **Step 1: Write the failing test for HL7 FHIR IPS and LOINC mapping**
-- [ ] **Step 2: Run test to verify it fails (`npm test src/lib/med-record/__tests__/standards.test.ts`)**
-- [ ] **Step 3: Implement data models in `src/types/med-record.ts` and standards in `src/lib/med-record/standards.ts`**
-- [ ] **Step 4: Create Supabase SQL migration `supabase/migrations/20261027_med_record_schema.sql` with RLS policies**
-- [ ] **Step 5: Run tests and verify they pass**
-- [ ] **Step 6: Commit changes**
+- [x] **Step 1: Write the failing test for HL7 FHIR IPS and LOINC mapping**
+- [x] **Step 2: Run test to verify it fails (`npm test src/lib/med-record/__tests__/standards.test.ts`)**
+- [x] **Step 3: Implement data models in `src/types/med-record.ts` and standards in `src/lib/med-record/standards.ts`**
+- [x] **Step 4: Create Supabase SQL migration `supabase/migrations/20261027_med_record_schema.sql` with RLS policies**
+- [x] **Step 5: Run tests and verify they pass**
+- [x] **Step 6: Commit changes**
 
 ---
 
@@ -63,13 +63,13 @@
 - Produces: `getEgyptianVaccineSchedule(birthDate: string): ScheduledVaccine[]`
 - Produces: `evaluateVitalMeasurement(type: MeasurementType, values: Record<string, number | string>): VitalEvaluation`
 
-- [ ] **Step 1: Write failing tests for WHO percentiles, vaccine schedule due dates, and vitals evaluation**
-- [ ] **Step 2: Run tests to verify failure**
-- [ ] **Step 3: Implement WHO growth calculation using official LMS tables and `who-growth-standards`**
-- [ ] **Step 4: Implement Egyptian MOH vaccine schedule engine with due/completed/overdue status**
-- [ ] **Step 5: Implement adult & pediatric vitals threshold evaluator (normal/abnormal bands)**
-- [ ] **Step 6: Run tests to verify all pass**
-- [ ] **Step 7: Commit changes**
+- [x] **Step 1: Write failing tests for WHO percentiles, vaccine schedule due dates, and vitals evaluation**
+- [x] **Step 2: Run tests to verify failure**
+- [x] **Step 3: Implement WHO growth calculation using official LMS tables and `who-growth-standards`**
+- [x] **Step 4: Implement Egyptian MOH vaccine schedule engine with due/completed/overdue status**
+- [x] **Step 5: Implement adult & pediatric vitals threshold evaluator (normal/abnormal bands)**
+- [x] **Step 6: Run tests to verify all pass**
+- [x] **Step 7: Commit changes**
 
 ---
 
@@ -86,12 +86,12 @@
 - Produces: `generateExpiringSignedUrl(storagePath: string, expiresInSeconds: number): Promise<string>`
 - Produces: `seedRealisticMockFamily(): Promise<void>`
 
-- [ ] **Step 1: Write failing tests for repository CRUD and expiring signed URL logic**
-- [ ] **Step 2: Run tests to verify failure**
-- [ ] **Step 3: Implement `storage.ts` and `mock-data.ts` with comprehensive fake Egyptian family data (Ahmed, Sara, Yassin)**
-- [ ] **Step 4: Implement `repository.ts` supporting both live Supabase client and resilient local storage fallback**
-- [ ] **Step 5: Run tests and verify all pass**
-- [ ] **Step 6: Commit changes**
+- [x] **Step 1: Write failing tests for repository CRUD and expiring signed URL logic**
+- [x] **Step 2: Run tests to verify failure**
+- [x] **Step 3: Implement `storage.ts` and `mock-data.ts` with comprehensive fake Egyptian family data (Ahmed, Sara, Yassin)**
+- [x] **Step 4: Implement `repository.ts` supporting both live Supabase client and resilient local storage fallback**
+- [x] **Step 5: Run tests and verify all pass**
+- [x] **Step 6: Commit changes**
 
 ---
 
@@ -111,13 +111,13 @@
 - Produces: Fast quick-log modal supporting Blood Pressure, Glucose, SpO2, Pulse, Temp, Weight, Height, Head Circumference.
 - Produces: Dynamic family member switcher with active profile state in React context or URL state.
 
-- [ ] **Step 1: Write failing test for QuickLogModal validation and submission**
-- [ ] **Step 2: Run test to verify failure**
-- [ ] **Step 3: Build `FamilySwitcher`, `Header`, and `QuickLogModal` with responsive RTL design**
-- [ ] **Step 4: Re-center `src/app/page.tsx` as Med Record Dashboard with profile summary and quick action buttons**
-- [ ] **Step 5: Build `src/app/profiles/page.tsx` for adding and editing parent and child profiles**
-- [ ] **Step 6: Run tests and verify they pass**
-- [ ] **Step 7: Commit changes**
+- [x] **Step 1: Write failing test for QuickLogModal validation and submission**
+- [x] **Step 2: Run test to verify failure**
+- [x] **Step 3: Build `FamilySwitcher`, `Header`, and `QuickLogModal` with responsive RTL design**
+- [x] **Step 4: Re-center `src/app/page.tsx` as Med Record Dashboard with profile summary and quick action buttons**
+- [x] **Step 5: Build `src/app/profiles/page.tsx` for adding and editing parent and child profiles**
+- [x] **Step 6: Run tests and verify they pass**
+- [x] **Step 7: Commit changes**
 
 ---
 
@@ -133,13 +133,13 @@
 - Consumes: `GrowthPercentilesResult`, `Measurement`, `GrowthMeasurement`
 - Produces: Responsive Recharts line curves with reference bands (Green/Yellow/Red) and WHO 3rd, 15th, 50th, 85th, 97th percentile curves.
 
-- [ ] **Step 1: Write failing test for chart data formatting and normal range classification**
-- [ ] **Step 2: Run test to verify failure**
-- [ ] **Step 3: Implement `MeasurementChart.tsx` for adult and child vitals**
-- [ ] **Step 4: Implement `GrowthPercentileChart.tsx` for pediatric weight, height, and head circumference**
-- [ ] **Step 5: Assemble `src/app/measurements/page.tsx` with date-range filters and metric tabs**
-- [ ] **Step 6: Run tests and verify they pass**
-- [ ] **Step 7: Commit changes**
+- [x] **Step 1: Write failing test for chart data formatting and normal range classification**
+- [x] **Step 2: Run test to verify failure**
+- [x] **Step 3: Implement `MeasurementChart.tsx` for adult and child vitals**
+- [x] **Step 4: Implement `GrowthPercentileChart.tsx` for pediatric weight, height, and head circumference**
+- [x] **Step 5: Assemble `src/app/measurements/page.tsx` with date-range filters and metric tabs**
+- [x] **Step 6: Run tests and verify they pass**
+- [x] **Step 7: Commit changes**
 
 ---
 
@@ -156,13 +156,13 @@
 - Consumes: `MedicalDocument`, `storage.ts`
 - Produces: Filterable document list (Labs, Radiology, Prescriptions, Hospital Reports, Vaccines), tag search, and secure signed download links.
 
-- [ ] **Step 1: Write failing test for document upload validation and category filtering**
-- [ ] **Step 2: Run test to verify failure**
-- [ ] **Step 3: Implement upload modal with file-type validation (PDF, JPEG, PNG)**
-- [ ] **Step 4: Implement API route for generating 15-minute expiring signed URLs**
-- [ ] **Step 5: Assemble `src/app/documents/page.tsx` with search, doctor, and facility filters**
-- [ ] **Step 6: Run tests and verify they pass**
-- [ ] **Step 7: Commit changes**
+- [x] **Step 1: Write failing test for document upload validation and category filtering**
+- [x] **Step 2: Run test to verify failure**
+- [x] **Step 3: Implement upload modal with file-type validation (PDF, JPEG, PNG)**
+- [x] **Step 4: Implement API route for generating 15-minute expiring signed URLs**
+- [x] **Step 5: Assemble `src/app/documents/page.tsx` with search, doctor, and facility filters**
+- [x] **Step 6: Run tests and verify they pass**
+- [x] **Step 7: Commit changes**
 
 ---
 
@@ -179,13 +179,13 @@
 - Consumes: `Medication`, `Encounter`
 - Produces: Active/Paused/Past medication manager with dose and frequency; Doctor visits journal with follow-up alerts.
 
-- [ ] **Step 1: Write failing test for medication status transitions and visit logging**
-- [ ] **Step 2: Run test to verify failure**
-- [ ] **Step 3: Implement `MedicationsManager.tsx` with dosage, frequency, and reminder flags**
-- [ ] **Step 4: Implement `VisitsLog.tsx` with specialty dropdown, diagnosis, and follow-up reminders**
-- [ ] **Step 5: Assemble `src/app/medications/page.tsx` and `src/app/visits/page.tsx`**
-- [ ] **Step 6: Run tests and verify they pass**
-- [ ] **Step 7: Commit changes**
+- [x] **Step 1: Write failing test for medication status transitions and visit logging**
+- [x] **Step 2: Run test to verify failure**
+- [x] **Step 3: Implement `MedicationsManager.tsx` with dosage, frequency, and reminder flags**
+- [x] **Step 4: Implement `VisitsLog.tsx` with specialty dropdown, diagnosis, and follow-up reminders**
+- [x] **Step 5: Assemble `src/app/medications/page.tsx` and `src/app/visits/page.tsx`**
+- [x] **Step 6: Run tests and verify they pass**
+- [x] **Step 7: Commit changes**
 
 ---
 
@@ -200,12 +200,12 @@
 - Consumes: `getEgyptianVaccineSchedule`, `Vaccination`
 - Produces: Timeline view of mandatory Egyptian MOH vaccines + optional vaccines, with status badges (Due, Completed, Overdue).
 
-- [ ] **Step 1: Write failing test for vaccination timeline and overdue calculation**
-- [ ] **Step 2: Run test to verify failure**
-- [ ] **Step 3: Implement `VaccinationTracker.tsx` with mark-as-completed, batch number entry, and date picker**
-- [ ] **Step 4: Assemble `src/app/vaccinations/page.tsx` with child profile auto-detection**
-- [ ] **Step 5: Run tests and verify they pass**
-- [ ] **Step 6: Commit changes**
+- [x] **Step 1: Write failing test for vaccination timeline and overdue calculation**
+- [x] **Step 2: Run test to verify failure**
+- [x] **Step 3: Implement `VaccinationTracker.tsx` with mark-as-completed, batch number entry, and date picker**
+- [x] **Step 4: Assemble `src/app/vaccinations/page.tsx` with child profile auto-detection**
+- [x] **Step 5: Run tests and verify they pass**
+- [x] **Step 6: Commit changes**
 
 ---
 
@@ -225,13 +225,13 @@
 - Produces: 1–2 page A4 clinical summary with abnormal flags, bilingual headers, and print CSS.
 - Produces: Expiring share link with instant revoke toggle and optional 4-digit PIN.
 
-- [ ] **Step 1: Write failing test for Doctor Report snapshot generation and expiring share authorization**
-- [ ] **Step 2: Run test to verify failure**
-- [ ] **Step 3: Implement `DoctorReportBuilder.tsx` with date-range and section selection**
-- [ ] **Step 4: Implement `DoctorReportPrintView.tsx` with optimized A4 print layout and Cairo typography**
-- [ ] **Step 5: Implement `ShareModal.tsx` and the public viewer `src/app/share/[token]/page.tsx`**
-- [ ] **Step 6: Run tests and verify they pass**
-- [ ] **Step 7: Commit changes**
+- [x] **Step 1: Write failing test for Doctor Report snapshot generation and expiring share authorization**
+- [x] **Step 2: Run test to verify failure**
+- [x] **Step 3: Implement `DoctorReportBuilder.tsx` with date-range and section selection**
+- [x] **Step 4: Implement `DoctorReportPrintView.tsx` with optimized A4 print layout and Cairo typography**
+- [x] **Step 5: Implement `ShareModal.tsx` and the public viewer `src/app/share/[token]/page.tsx`**
+- [x] **Step 6: Run tests and verify they pass**
+- [x] **Step 7: Commit changes**
 
 ---
 
@@ -249,11 +249,11 @@
 - Consumes: Complete family health data
 - Produces: High-contrast 1-screen Emergency Card (`/emergency/[memberId]`), JSON & CSV export, "Delete all data" handler, and PWA manifest.
 
-- [ ] **Step 1: Write failing tests for data export (JSON & CSV) and emergency summary compilation**
-- [ ] **Step 2: Run tests to verify failure**
-- [ ] **Step 3: Implement `/emergency/[memberId]/page.tsx` with one-tap emergency call triggers**
-- [ ] **Step 4: Implement `/settings/page.tsx` with data export, deletion, and consent disclaimer**
-- [ ] **Step 5: Configure PWA `manifest.json` and Arabic typography settings**
-- [ ] **Step 6: Write end-to-end integration test in `e2e/med-record.spec.ts`**
-- [ ] **Step 7: Run all tests (unit + type-check + lint) and verify clean run**
-- [ ] **Step 8: Final review, documentation update, and commit**
+- [x] **Step 1: Write failing tests for data export (JSON & CSV) and emergency summary compilation**
+- [x] **Step 2: Run tests to verify failure**
+- [x] **Step 3: Implement `/emergency/[memberId]/page.tsx` with one-tap emergency call triggers**
+- [x] **Step 4: Implement `/settings/page.tsx` with data export, deletion, and consent disclaimer**
+- [x] **Step 5: Configure PWA `manifest.json` and Arabic typography settings**
+- [x] **Step 6: Write end-to-end integration test in `e2e/med-record.spec.ts`**
+- [x] **Step 7: Run all tests (unit + type-check + lint) and verify clean run**
+- [x] **Step 8: Final review, documentation update, and commit**
