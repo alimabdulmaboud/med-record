@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import type { Medication, MedicationStatus } from '@/types/med-record';
 import { formatMedicationSchedule } from '@/lib/med-record/medications-visits-helper';
+import { DrugCombobox } from '@/components/drugs/DrugCombobox';
 
 interface MedicationsManagerProps {
   memberId: string;
@@ -253,13 +254,29 @@ export function MedicationsManager({
 
             <form onSubmit={handleAddSubmit} className="p-6 space-y-4 overflow-y-auto">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">اسم الدواء / العلاج *</label>
-                <input
-                  type="text"
-                  placeholder="مثال: كونكور 5 مجم (Concor) أو شراب سيتال"
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  اسم الدواء (من قاعدة الأدوية المصرية أو يدوياً) *
+                </label>
+                <DrugCombobox
                   value={name}
-                  onChange={e => setName(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border rounded-xl text-xs focus:bg-white focus:ring-2 focus:ring-emerald-500"
+                  onChange={(val, selectedDrug) => {
+                    setName(val);
+                    if (selectedDrug && !timingNotes) {
+                      if (selectedDrug.scientificName) {
+                        setTimingNotes(`المادة الفعالة: ${selectedDrug.scientificName}`);
+                      }
+                    }
+                  }}
+                  onSelectDrug={(drug) => {
+                    if (!dose && drug.route) {
+                      if (drug.route.includes('SOLID')) {
+                        setDose('قرص واحد');
+                      } else if (drug.route.includes('LIQUID')) {
+                        setDose('5 مل (ملعقة)');
+                      }
+                    }
+                  }}
+                  placeholder="ابحث في 25,000+ دواء مصري أو اكتب يدوياً..."
                   required
                 />
               </div>

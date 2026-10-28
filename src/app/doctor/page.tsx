@@ -25,6 +25,7 @@ import {
   Visit,
 } from "@/lib/clinical/types";
 import { PrintablePrescription } from "@/components/prescription/PrintablePrescription";
+import { DrugCombobox } from "@/components/drugs/DrugCombobox";
 import { isModuleEnabled } from "@/modules/registry";
 import { getFullPediatricRecord } from "@/modules/pediatrics/service";
 import { PediatricsWorkspace } from "@/components/pediatrics/PediatricsWorkspace";
@@ -1175,14 +1176,21 @@ export default function DoctorDashboardPage() {
                       <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
                         <div className="sm:col-span-4">
                           <label className="block text-[11px] text-slate-500 mb-1">{t("doctor.visitForm.medName")}</label>
-                          <input
-                            type="text"
+                          <DrugCombobox
                             value={item.medicationName}
-                            onChange={(e) =>
-                              handleUpdatePrescriptionItem(idx, "medicationName", e.target.value)
+                            onChange={(val) =>
+                              handleUpdatePrescriptionItem(idx, "medicationName", val)
                             }
-                            placeholder="Ventolin Syrup"
-                            className="w-full text-xs font-semibold rounded-lg border border-slate-200 p-2 focus:ring-2 focus:ring-blue-500 bg-white"
+                            onSelectDrug={(drug) => {
+                              if (!item.dose && drug.route) {
+                                if (drug.route.includes("SOLID")) {
+                                  handleUpdatePrescriptionItem(idx, "dose", "قرص واحد");
+                                } else if (drug.route.includes("LIQUID")) {
+                                  handleUpdatePrescriptionItem(idx, "dose", "5 مل");
+                                }
+                              }
+                            }}
+                            placeholder="ابحث في أدوية مصر أو اكتب..."
                           />
                         </div>
                         <div className="sm:col-span-2">
