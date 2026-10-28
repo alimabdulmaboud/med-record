@@ -33,6 +33,8 @@ export default function NewPersonPage() {
     const currentPeople: Person[] = stored ? JSON.parse(stored) : [];
     currentPeople.push(newPerson);
     localStorage.setItem("med_family_people", JSON.stringify(currentPeople));
+    // Ensure demo mode stays disabled once user starts registering their real family
+    localStorage.setItem("med_demo_cleared", "true");
   };
 
   return (

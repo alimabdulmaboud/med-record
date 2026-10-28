@@ -8,6 +8,7 @@ import {
   compileEmergencyCard,
   type EmergencyCardPayload,
 } from '@/lib/family/emergency-service';
+import { getStoredPeople } from '@/lib/family/demo-service';
 import {
   AlertTriangle,
   PhoneCall,
@@ -81,19 +82,7 @@ export default function EmergencyMemberPage() {
     try {
       setIsLoading(true);
 
-      let list: Person[] = [];
-      try {
-        const stored = localStorage.getItem("med_family_people");
-        if (stored) {
-          list = JSON.parse(stored);
-        }
-      } catch {
-        // ignore
-      }
-
-      if (list.length === 0) {
-        list = INITIAL_DEMO_PEOPLE;
-      }
+      const list = getStoredPeople();
       setPeople(list);
 
       const targetPerson = list.find((p) => p.id === memberId) || list[0];
@@ -111,6 +100,27 @@ export default function EmergencyMemberPage() {
   };
 
   if (isLoading || !emergencyCard) {
+    if (!isLoading && people.length === 0) {
+      return (
+        <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 text-white" dir="rtl">
+          <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center space-y-4">
+            <div className="w-16 h-16 rounded-2xl bg-slate-800 text-slate-400 flex items-center justify-center mx-auto">
+              <Users className="w-8 h-8" />
+            </div>
+            <h2 className="text-lg font-bold">لا يوجد أفراد مسجلين في العائلة بعد</h2>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              بطاقة الطوارئ تتطلب وجود فرد مسجل في فضاء العائلة لعرض الحساسيات وجهات الاتصال وأرقام الإسعاف.
+            </p>
+            <Link
+              href="/family/person/new"
+              className="inline-flex items-center gap-2 py-2.5 px-5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-md transition-all"
+            >
+              إضافة فرد جديد
+            </Link>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="min-h-screen bg-rose-950 flex items-center justify-center p-4" dir="rtl">
         <div className="text-center text-white space-y-3">

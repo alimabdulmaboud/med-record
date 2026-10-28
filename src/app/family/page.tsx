@@ -15,83 +15,46 @@ import {
   Sparkles,
 } from "lucide-react";
 import { PersonCard } from "@/components/family/PersonCard";
+import { DemoNoticeBanner } from "@/components/family/DemoNoticeBanner";
 import type { Person } from "@/types/family";
-
-// Default realistic fake Egyptian family seed data for Phase 1
-const INITIAL_DEMO_PEOPLE: Person[] = [
-  {
-    id: "p-ahmed",
-    family_id: "fam-demo",
-    name: "أحمد مصطفى إبراهيم",
-    birth_date: "1988-06-15",
-    sex: "male",
-    blood_type: "A+",
-    allergies: ["بنسلين (Penicillin)"],
-    chronic_conditions: ["ارتفاع ضغط الدم (Hypertension)"],
-    phone_number: "+201012345678",
-    linked_user_id: "usr-ahmed",
-    notes: "متابعة دورية لقياسات الضغط",
-    archived_at: null,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: "p-sara",
-    family_id: "fam-demo",
-    name: "سارة أحمد مصطفى",
-    birth_date: "2021-04-10",
-    sex: "female",
-    blood_type: "A+",
-    allergies: ["الفول السوداني (Peanuts)"],
-    chronic_conditions: [],
-    phone_number: null,
-    linked_user_id: null,
-    notes: "حساسية شديدة من الفول السوداني",
-    archived_at: null,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: "p-yassin",
-    family_id: "fam-demo",
-    name: "ياسين أحمد مصطفى",
-    birth_date: "2025-08-20",
-    sex: "male",
-    blood_type: "O+",
-    allergies: [],
-    chronic_conditions: [],
-    phone_number: null,
-    linked_user_id: null,
-    notes: "متابعة جدول التطعيمات الإلزامية",
-    archived_at: null,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-];
+import {
+  isDemoModeActive,
+  getStoredPeople,
+  saveStoredPeople,
+  getFamilyName,
+  restoreDemoData,
+} from "@/lib/family/demo-service";
 
 export default function FamilySpaceHome() {
   const router = useRouter();
   const [people, setPeople] = useState<Person[]>([]);
-  const [familyName, setFamilyName] = useState("عائلة أحمد مصطفى");
+  const [familyName, setFamilyName] = useState("فضاء العائلة");
+  const [isDemo, setIsDemo] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Load people from localStorage or fallback to initial fake seed data
+  const refreshState = () => {
     try {
-      const stored = localStorage.getItem("med_family_people");
-      if (stored) {
-        const parsed = JSON.parse(stored) as Person[];
-        setPeople(parsed.filter((p) => !p.archived_at));
-      } else {
-        localStorage.setItem("med_family_people", JSON.stringify(INITIAL_DEMO_PEOPLE));
-        setPeople(INITIAL_DEMO_PEOPLE);
-      }
-    } catch {
-      setPeople(INITIAL_DEMO_PEOPLE);
+      const activePeople = getStoredPeople();
+      setPeople(activePeople);
+      setFamilyName(getFamilyName());
+      setIsDemo(isDemoModeActive());
     } finally {
       setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    refreshState();
   }, []);
+
+  const handleDemoCleared = () => {
+    refreshState();
+  };
+
+  const handleRestoreDemo = () => {
+    restoreDemoData();
+    refreshState();
+  };
 
   const handleArchive = (personId: string) => {
     if (!confirm("هل أنت متأكد من أرشفة هذا الفرد؟ يمكنك استعادته لاحقاً من الإعدادات.")) {
@@ -104,7 +67,7 @@ export default function FamilySpaceHome() {
       const updated = currentPeople.map((p: Person) =>
         p.id === personId ? { ...p, archived_at: new Date().toISOString() } : p
       );
-      localStorage.setItem("med_family_people", JSON.stringify(updated));
+      saveStoredPeople(updated);
       setPeople(updated.filter((p: Person) => !p.archived_at));
     } catch {
       alert("حدث خطأ أثناء الأرشفة");
@@ -158,6 +121,9 @@ export default function FamilySpaceHome() {
       {/* Main Container */}
       <main className="max-w-5xl w-full mx-auto p-4 md:p-8 flex-1">
         
+        {/* Demo Notice Banner (Shown only when in demo mode) */}
+        {isDemo && <DemoNoticeBanner onCleared={handleDemoCleared} />}
+
         {/* Banner with Add Action */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8 bg-gradient-to-l from-teal-500/10 via-teal-500/5 to-transparent p-5 rounded-3xl border border-teal-500/20">
           <div>
@@ -190,21 +156,39 @@ export default function FamilySpaceHome() {
 
         {/* Empty state */}
         {!loading && people.length === 0 && (
-          <div className="bg-white dark:bg-slate-900 rounded-3xl p-12 text-center max-w-md mx-auto border border-slate-200 dark:border-slate-800 shadow-sm">
-            <div className="w-16 h-16 rounded-3xl bg-teal-50 dark:bg-teal-950 text-teal-600 dark:text-teal-400 flex items-center justify-center mx-auto mb-4">
-              <Users className="w-8 h-8" />
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-10 md:p-14 text-center max-w-lg mx-auto border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+            <div className="w-20 h-20 rounded-3xl bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 flex items-center justify-center mx-auto shadow-inner">
+              <Users className="w-10 h-10" />
             </div>
-            <h2 className="text-lg font-bold mb-1">لا يوجد أفراد مسجلين في العائلة بعد</h2>
-            <p className="text-xs text-slate-500 mb-6 leading-relaxed">
-              ابدأ بإضافة بياناتك الشخصية كولي أمر أو أضف طفلك لتتبع نموه وسجله الصحي.
-            </p>
-            <Link
-              href="/family/person/new"
-              className="inline-flex items-center gap-2 py-2.5 px-5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm shadow-md transition-all"
-            >
-              <Plus className="w-4 h-4" />
-              <span>إضافة الفرد الأول</span>
-            </Link>
+            
+            <div className="space-y-2">
+              <h2 className="text-lg md:text-xl font-extrabold text-slate-900 dark:text-slate-100">
+                سجل عائلتك الصحي نظيف وجاهز للبدء
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-md mx-auto">
+                تم مسح البيانات التجريبية بنجاح. ابدأ الآن بتسجيل أفراد عائلتك الحقيقيين لحفظ التاريخ المرضي، الروشتات، ومتابعة تطعيمات وقياسات الأسرة في مكان آمن وخاص.
+              </p>
+            </div>
+
+            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link
+                href="/family/person/new"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 py-3 px-6 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm shadow-lg shadow-teal-600/20 transition-all"
+              >
+                <Plus className="w-5 h-5" />
+                <span>إضافة أول فرد في عائلتك الآن</span>
+              </Link>
+
+              <button
+                type="button"
+                onClick={handleRestoreDemo}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 py-3 px-4 rounded-2xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold text-xs transition-colors"
+                title="استعادة البيانات الاسترشادية للتجربة"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>استعراض بيانات تجريبية (Demo)</span>
+              </button>
+            </div>
           </div>
         )}
 

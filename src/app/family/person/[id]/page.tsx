@@ -100,6 +100,7 @@ import { DoctorReportView } from "@/components/family/DoctorReportView";
 import { DoctorReportShareModal } from "@/components/family/DoctorReportShareModal";
 import { SymptomTriageModal } from "@/components/med-record/SymptomTriageModal";
 import type { FamilyMember, BloodType } from "@/types/med-record";
+import { isDemoModeActive } from "@/lib/family/demo-service";
 
 const INITIAL_DEMO_PEOPLE: Person[] = [
   {
@@ -270,17 +271,26 @@ export default function PersonHealthDashboard({
       }
 
       setPerson(found);
-
-      // Seed mock measurements & documents if empty
-      await seedRealisticMockMeasurements([found, ...INITIAL_DEMO_PEOPLE]);
-      await seedRealisticMockDocuments([found, ...INITIAL_DEMO_PEOPLE]);
-
       const ageCalc = calculatePersonAge(found.birth_date);
-      await seedRealisticMockMedicationsAndEncounters(
-        personId,
-        found.family_id,
-        ageCalc.years
-      );
+
+      // Seed mock measurements & documents ONLY if in active demo mode and viewing a demo member
+      const isDemoActive = isDemoModeActive();
+      const isDemoMember = INITIAL_DEMO_PEOPLE.some((p) => p.id === personId);
+
+      if (isDemoActive && isDemoMember) {
+        await seedRealisticMockMeasurements([found, ...INITIAL_DEMO_PEOPLE]);
+        await seedRealisticMockDocuments([found, ...INITIAL_DEMO_PEOPLE]);
+
+        await seedRealisticMockMedicationsAndEncounters(
+          personId,
+          found.family_id,
+          ageCalc.years
+        );
+        await seedRealisticMockReports(found);
+        if (ageCalc.isChild) {
+          await seedRealisticMockVaccinations(personId, found.family_id, found.birth_date);
+        }
+      }
 
       // 2. Load measurements, documents, medications, encounters & summary
       const mList = await getPersonMeasurements(personId);
@@ -298,7 +308,6 @@ export default function PersonHealthDashboard({
       const s = await getLatestVitalsSummary(personId);
       setSummary(s);
 
-      await seedRealisticMockReports(found);
       const repList = await getPersonDoctorReports(personId);
       setReports(repList);
       if (repList.length > 0) {
@@ -306,7 +315,6 @@ export default function PersonHealthDashboard({
       }
 
       if (ageCalc.isChild) {
-        await seedRealisticMockVaccinations(personId, found.family_id, found.birth_date);
         const vacData = await getPersonVaccinationsSchedule(personId, found.birth_date);
         setVaccinationMilestones(vacData.milestones);
         setVaccinationStats(vacData.stats);
@@ -516,6 +524,23 @@ export default function PersonHealthDashboard({
 
       {/* Main Container */}
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+        {isDemoModeActive() && INITIAL_DEMO_PEOPLE.some((p) => p.id === person.id) && (
+          <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-amber-900 dark:text-amber-200 shadow-xs">
+            <div className="flex items-center gap-2.5">
+              <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>
+                <strong>تنبيه:</strong> هذا ملف تجريبي استرشادي ({person.name}). يمكنك تجربة تسجيل القياسات وإضافة الأدوية عليه، أو الرجوع لفضاء العائلة لمسحه والبدء بسجل عائلتك الحقيقي.
+              </span>
+            </div>
+            <Link
+              href="/family"
+              className="inline-flex items-center gap-1 font-bold text-amber-800 dark:text-amber-300 underline underline-offset-4 shrink-0"
+            >
+              <span>إدارة البيانات / مسح التجريبي</span>
+            </Link>
+          </div>
+        )}
+
         {/* Profile Card & Action Banner */}
         <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-start gap-4">

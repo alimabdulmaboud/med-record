@@ -20,27 +20,55 @@ import {
   exportComprehensiveFamilyCSV,
   type FamilyExportPayload,
 } from "@/lib/family/export";
+import {
+  isDemoModeActive,
+  clearDemoData,
+  restoreDemoData,
+} from "@/lib/family/demo-service";
 
 export default function FamilySettingsPage() {
   const router = useRouter();
   const [archivedPeople, setArchivedPeople] = useState<Person[]>([]);
+  const [isDemo, setIsDemo] = useState(false);
   const [deleteConfirmationText, setDeleteConfirmationText] = useState("");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
 
-  useEffect(() => {
+  const loadSettingsState = () => {
     try {
+      setIsDemo(isDemoModeActive());
       const stored = localStorage.getItem("med_family_people");
       if (stored) {
         const people: Person[] = JSON.parse(stored);
         setArchivedPeople(people.filter((p) => Boolean(p.archived_at)));
+      } else {
+        setArchivedPeople([]);
       }
     } catch {
       // Ignore
     }
+  };
+
+  useEffect(() => {
+    loadSettingsState();
   }, []);
+
+  const handleClearDemoData = () => {
+    if (!confirm("هل ترغب في مسح البيانات الاسترشادية التجريبية؟ سيصبح السجل فارغاً تماماً للبدء ببيانات عائلتك.")) {
+      return;
+    }
+    clearDemoData();
+    loadSettingsState();
+    setMessage({ text: "تم مسح البيانات التجريبية بنجاح. يمكنك الآن إضافة أفراد أسرتك الحقيقيين من فضاء العائلة.", type: "success" });
+  };
+
+  const handleRestoreDemoData = () => {
+    restoreDemoData();
+    loadSettingsState();
+    setMessage({ text: "تمت استعادة البيانات الاسترشادية التجريبية لمعاينتها بنجاح.", type: "success" });
+  };
 
   const getFullExportPayload = (): FamilyExportPayload => {
     const parseKey = (key: string) => {
@@ -295,7 +323,53 @@ export default function FamilySettingsPage() {
           )}
         </div>
 
-        {/* 3. Delete All My Data (Danger Zone) */}
+        {/* 3. Demo Data Management (البيانات الاسترشادية والتجريبية) */}
+        <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-amber-200 dark:border-amber-900/60 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-bold text-amber-950 dark:text-amber-200 flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-amber-600" />
+                <span>إدارة البيانات التجريبية الاسترشادية</span>
+              </h2>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                isDemo
+                  ? "bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300"
+                  : "bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300"
+              }`}>
+                {isDemo ? "البيانات التجريبية مفعلة" : "سجل عائلي حقيقي ونظيف"}
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 leading-relaxed max-w-lg">
+              {isDemo
+                ? "أنت تتصفح حالياً ملفات عائلة وهمية (أحمد، سارة، ياسين). يمكنك مسحها لبدء تسجيل أسرتك بسجل فارغ وخاص تماماً."
+                : "السجل خالي من أي بيانات وهمية. يمكنك إعادة توليد السجلات الاسترشادية في أي وقت إذا أردت تجربة مزايا النظام."}
+            </p>
+          </div>
+
+          <div className="shrink-0 w-full sm:w-auto">
+            {isDemo ? (
+              <button
+                type="button"
+                onClick={handleClearDemoData}
+                className="w-full sm:w-auto px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-md shadow-rose-600/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>مسح البيانات التجريبية</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleRestoreDemoData}
+                className="w-full sm:w-auto px-4 py-2.5 bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-800 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <RefreshCw className="w-4 h-4 text-amber-600" />
+                <span>استعادة البيانات التجريبية للمعاينة</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* 4. Delete All My Data (Danger Zone) */}
         <div className="bg-rose-50/50 dark:bg-rose-950/20 rounded-3xl p-6 border border-rose-200 dark:border-rose-900/60 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <h2 className="text-base font-bold text-rose-900 dark:text-rose-200 flex items-center gap-2">
