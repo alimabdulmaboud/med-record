@@ -71,7 +71,8 @@ export interface EvaluateRLSParams {
     | "person_measurements"
     | "person_documents"
     | "person_medications"
-    | "person_encounters";
+    | "person_encounters"
+    | "person_vaccinations";
   record: any;
 }
 
@@ -114,7 +115,11 @@ export function evaluateFamilyRLS(params: EvaluateRLSParams): boolean {
     }
   }
 
-  if (table === "person_medications" || table === "person_encounters") {
+  if (
+    table === "person_medications" ||
+    table === "person_encounters" ||
+    table === "person_vaccinations"
+  ) {
     if (action === "SELECT") {
       return (
         isFamilyManager(context, record.family_id) ||
