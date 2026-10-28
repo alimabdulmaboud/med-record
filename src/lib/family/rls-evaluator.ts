@@ -60,7 +60,7 @@ export function hasActiveViewerGrant(ctx: RLSContext, personId: string): boolean
 export interface EvaluateRLSParams {
   context: RLSContext;
   action: "SELECT" | "INSERT" | "UPDATE" | "DELETE";
-  table: "families" | "family_members" | "people" | "emergency_contacts" | "viewer_grants" | "audit_log" | "consents";
+  table: "families" | "family_members" | "people" | "emergency_contacts" | "viewer_grants" | "audit_log" | "consents" | "person_measurements";
   record: any;
 }
 
@@ -72,6 +72,18 @@ export function evaluateFamilyRLS(params: EvaluateRLSParams): boolean {
       return (
         isFamilyManager(context, record.family_id) ||
         hasActiveViewerGrant(context, record.id)
+      );
+    }
+    if (action === "INSERT" || action === "UPDATE" || action === "DELETE") {
+      return isFamilyManager(context, record.family_id);
+    }
+  }
+
+  if (table === "person_measurements") {
+    if (action === "SELECT") {
+      return (
+        isFamilyManager(context, record.family_id) ||
+        hasActiveViewerGrant(context, record.person_id)
       );
     }
     if (action === "INSERT" || action === "UPDATE" || action === "DELETE") {
