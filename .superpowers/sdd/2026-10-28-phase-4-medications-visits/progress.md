@@ -8,7 +8,8 @@ Pre-flight scan:
 - Task 5 verifies with full test suite, E2E spec, TypeScript check and Next.js build
 Pre-flight: no shared interfaces conflict
 Task 1: complete (migration, types, RLS test suite: 7 passed)
-Task 2: ready
+Task 2: complete (medications-encounters-service.ts & tests: 10 passed)
+Task 3: ready
 Task 3: pending
 Task 4: pending
 Task 5: pending
