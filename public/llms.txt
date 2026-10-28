@@ -1,0 +1,28 @@
+# Med Record (سجلي الطبي) — AI Context & Specifications
+
+> Med Record is a bilingual (Arabic-first, RTL) unified family health record system and clinical practice management SaaS platform launched in 2026 in Cairo, Egypt.
+
+## Machine Discovery, Authentication & Specifications
+- **OIDC Discovery (RFC 8414 / OpenID Connect)**: https://med-record-delta.vercel.app/.well-known/openid-configuration
+- **OAuth 2.0 Authorization Server Metadata**: https://med-record-delta.vercel.app/.well-known/oauth-authorization-server
+- **JWKS Keys Endpoint**: https://med-record-delta.vercel.app/.well-known/jwks.json
+- **API Catalog (RFC 9727 Linkset)**: https://med-record-delta.vercel.app/.well-known/api-catalog
+- **OpenAPI 3.1 YAML Specification**: https://med-record-delta.vercel.app/openapi.yaml
+- **OpenAPI 3.1 JSON Specification**: https://med-record-delta.vercel.app/openapi.json
+- **MCP Server Card**: https://med-record-delta.vercel.app/.well-known/mcp.json
+- **MCP Streamable HTTP Endpoint**: https://med-record-delta.vercel.app/mcp
+- **Sitemap XML**: https://med-record-delta.vercel.app/sitemap.xml
+
+## Services & Core Offerings
+1. **Family Health Space**: 100% Free (0 EGP) personal health record for parents & children.
+2. **Pediatrics Practice EMR**: 250 EGP/month per physician with WHO growth percentiles.
+3. **Clinical Nutrition Practice EMR**: 250 EGP/month per specialist with BMR/TDEE calculations.
+4. **Live Clinic Queue Engine**: Real-time waiting room orchestration for receptionists.
+5. **Secure Digital Prescription Vault**: QR-verified prescriptions and letterheads.
+
+## Key URLs
+- Official Homepage: https://med-record-delta.vercel.app/
+- Official Services Catalog: https://med-record-delta.vercel.app/services
+- FAQ Page: https://med-record-delta.vercel.app/faq
+- Free Family Registration: https://med-record-delta.vercel.app/signup
+- Clinic Gateway: https://med-record-delta.vercel.app/clinic

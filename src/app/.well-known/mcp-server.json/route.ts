@@ -1,0 +1,36 @@
+import { NextResponse } from "next/server";
+
+export async function GET() {
+  const card = {
+    $schema: "https://modelcontextprotocol.io/schema/server-card.json",
+    name: "med-record",
+    title: "Med Record MCP Server",
+    description: "Model Context Protocol server for Med Record: search clinical documentation, access public health tracking features, and retrieve clinic services.",
+    version: "1.0.0",
+    homepage: "https://med-record-delta.vercel.app",
+    transport: {
+      type: "http",
+      url: "https://med-record-delta.vercel.app/mcp",
+    },
+    capabilities: {
+      tools: {
+        listChanged: false,
+      },
+      resources: {
+        subscribe: false,
+        listChanged: false,
+      },
+      prompts: {
+        listChanged: false,
+      },
+    },
+  };
+
+  return NextResponse.json(card, {
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Content-Type": "application/json",
+      "Cache-Control": "public, max-age=3600",
+    },
+  });
+}

@@ -1,0 +1,108 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Med Record Platform API",
+    "description": "Unified Family Health Records & Specialty Clinic Practice Management API for Med Record.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Med Record Engineering",
+      "url": "https://med-record-delta.vercel.app",
+      "email": "support@med-record-delta.vercel.app"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://med-record-delta.vercel.app",
+      "description": "Production Server"
+    }
+  ],
+  "paths": {
+    "/api/drugs/search": {
+      "get": {
+        "summary": "Search pharmaceutical medications",
+        "description": "Search medication database by brand or active ingredient name in Arabic and English.",
+        "operationId": "searchDrugs",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "description": "Drug name query string",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of matching medications",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "string" },
+                      "brand_name": { "type": "string" },
+                      "active_ingredient": { "type": "string" },
+                      "dosage_form": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mcp": {
+      "post": {
+        "summary": "Model Context Protocol (MCP) Streamable HTTP endpoint",
+        "description": "JSON-RPC 2.0 endpoint for AI assistants (initialize, tools/list, ping).",
+        "operationId": "mcpEndpoint",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["jsonrpc", "method"],
+                "properties": {
+                  "jsonrpc": { "type": "string", "example": "2.0" },
+                  "id": { "type": "integer", "example": 1 },
+                  "method": { "type": "string", "example": "initialize" },
+                  "params": { "type": "object" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "JSON-RPC response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/family/export": {
+      "get": {
+        "summary": "Export comprehensive family health record",
+        "description": "Download full medical history, vitals, and vaccinations as encrypted JSON or PDF.",
+        "operationId": "exportFamilyRecord",
+        "responses": {
+          "200": {
+            "description": "Export archive payload"
+          }
+        }
+      }
+    }
+  }
+}

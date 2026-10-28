@@ -1,0 +1,12 @@
+{
+  "keys": [
+    {
+      "kty": "RSA",
+      "use": "sig",
+      "alg": "RS256",
+      "kid": "med-record-key-1",
+      "n": "u1L7Z...",
+      "e": "AQAB"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+import { NextResponse } from "next/server";
+
+export async function GET() {
+  const oauthConfig = {
+    issuer: "https://med-record-delta.vercel.app",
+    authorization_endpoint: "https://med-record-delta.vercel.app/login",
+    token_endpoint: "https://med-record-delta.vercel.app/api/auth/token",
+    jwks_uri: "https://med-record-delta.vercel.app/.well-known/jwks.json",
+    scopes_supported: ["openid", "profile", "email", "health_records:read"],
+    response_types_supported: ["code"],
+    response_modes_supported: ["query"],
+    grant_types_supported: ["authorization_code", "refresh_token"],
+    token_endpoint_auth_methods_supported: ["client_secret_post", "client_secret_basic", "none"],
+    code_challenge_methods_supported: ["S256"],
+    service_documentation: "https://med-record-delta.vercel.app/services",
+  };
+
+  return NextResponse.json(oauthConfig, {
+    status: 200,
+    headers: {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+      "Cache-Control": "public, max-age=3600",
+    },
+  });
+}
