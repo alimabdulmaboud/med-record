@@ -72,7 +72,9 @@ export interface EvaluateRLSParams {
     | "person_documents"
     | "person_medications"
     | "person_encounters"
-    | "person_vaccinations";
+    | "person_vaccinations"
+    | "doctor_reports"
+    | "report_shares";
   record: any;
 }
 
@@ -118,13 +120,29 @@ export function evaluateFamilyRLS(params: EvaluateRLSParams): boolean {
   if (
     table === "person_medications" ||
     table === "person_encounters" ||
-    table === "person_vaccinations"
+    table === "person_vaccinations" ||
+    table === "doctor_reports"
   ) {
     if (action === "SELECT") {
       return (
         isFamilyManager(context, record.family_id) ||
         hasActiveViewerGrant(context, record.person_id)
       );
+    }
+    if (action === "INSERT" || action === "UPDATE" || action === "DELETE") {
+      return isFamilyManager(context, record.family_id);
+    }
+  }
+
+  if (table === "report_shares") {
+    if (action === "SELECT") {
+      if (isFamilyManager(context, record.family_id)) {
+        return true;
+      }
+      // Public bearer token access check: not revoked and not expired
+      const currentTime = context.now || new Date();
+      const expiresAt = new Date(record.expires_at);
+      return !record.is_revoked && expiresAt.getTime() > currentTime.getTime();
     }
     if (action === "INSERT" || action === "UPDATE" || action === "DELETE") {
       return isFamilyManager(context, record.family_id);
