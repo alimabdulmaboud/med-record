@@ -237,6 +237,8 @@ Next.js (App Router) + TypeScript + Tailwind + shadcn/ui · Supabase (Postgres, 
 
 ## Changelog
 
+- 2026-10-28 — Phase 2 (Rapid Measurements & WHO Growth Engine): Postgres RLS schema for `person_measurements`, sub-10-second QuickLogModal with steppers and live abnormality evaluations (AHA/ADA), official WHO LMS growth curves for pediatric weight, height, and head circumference percentiles/Z-scores, interactive Recharts trend graphs, and complete Person Health Dashboard at `/family/person/[id]`.
+- 2026-10-27 — Phase 1 (Family Space Foundation): Dual-entry portal, open-signup family space, invitation-only clinic gateway stub, Postgres RLS on `families`, `family_members`, `people`, `viewer_grants`, `consents`, `audit_log`, soft-deletes, settings, and GDPR account wipe.
 - 2026-10-11 — v1.0: Full SaaS v1.0 Complete! Phase 15 Hardening and handover finished (docs/SECURITY_REPORT.md, docs/OPERATIONS.md, docs/BACKUP_RESTORE.md, open data export in JSON/CSV, 100% Arabic translation parity verified, 17 test suites and 169 unit tests passing).
 - 2026-10-11 — v0.8: Phase 14 completed. Reminders module implemented with extensible NotificationChannel abstraction (manual copy-to-clipboard channel shipped, WhatsApp/SMS ready), template interpolation, and daily reception reminders workspace (/reception/reminders).
 - 2026-10-11 — v0.7: Phase 13 completed. Clinic owner reports implemented (/owner/reports) with aggregate KPI cards, wait time hourly Recharts curves, doctor volume distribution, estimated lost revenue, and UTF-8 BOM CSV export (zero clinical data exposed).
