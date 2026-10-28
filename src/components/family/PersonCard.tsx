@@ -13,6 +13,7 @@ import {
   AlertCircle,
   Phone,
   Shield,
+  Sparkles,
 } from "lucide-react";
 import type { Person } from "@/types/family";
 import { calculatePersonAge } from "@/lib/family/service";
@@ -131,12 +132,12 @@ export function PersonCard({ person, onArchive }: PersonCardProps) {
         </div>
       </div>
 
-      {/* Quick Actions (Phase 2) */}
+      {/* Quick Actions */}
       <div className="pt-4 border-t border-slate-100 dark:border-slate-800/80">
         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
           إجراءات سريعة
         </div>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <Link
             href={`/family/person/${person.id}`}
             className="p-2 rounded-xl bg-teal-50 dark:bg-teal-950/60 hover:bg-teal-100 dark:hover:bg-teal-900 text-teal-800 dark:text-teal-200 flex flex-col items-center gap-1 text-[11px] font-bold transition-colors"
@@ -145,23 +146,30 @@ export function PersonCard({ person, onArchive }: PersonCardProps) {
             <span>الملف والقياس</span>
           </Link>
 
-          <button
-            type="button"
-            onClick={() => alert("إضافة الروشتات ومواعيد الجرعات ستنطلق في المرحلة القادمة")}
-            className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-teal-50 dark:hover:bg-teal-950 text-slate-600 dark:text-slate-300 hover:text-teal-700 dark:hover:text-teal-300 flex flex-col items-center gap-1 text-[11px] font-medium transition-colors"
+          <Link
+            href={`/family/person/${person.id}?triage=true`}
+            className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 dark:hover:bg-amber-900 text-amber-800 dark:text-amber-200 flex flex-col items-center gap-1 text-[11px] font-bold transition-colors"
+            title="فحص ما تشعر به وتحديد التخصص الطبي المناسب"
+          >
+            <Sparkles className="w-4 h-4 text-amber-600" />
+            <span>فحص الأعراض</span>
+          </Link>
+
+          <Link
+            href={`/family/person/${person.id}`}
+            className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-indigo-800 dark:text-indigo-200 flex flex-col items-center gap-1 text-[11px] font-bold transition-colors"
           >
             <Pill className="w-4 h-4 text-indigo-600" />
-            <span>روشتة</span>
-          </button>
+            <span>الأدوية</span>
+          </Link>
 
-          <button
-            type="button"
-            onClick={() => alert("توليد تقرير الزيارة الطبية الموحد سينطلق في مرحلة التقارير")}
-            className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-teal-50 dark:hover:bg-teal-950 text-slate-600 dark:text-slate-300 hover:text-teal-700 dark:hover:text-teal-300 flex flex-col items-center gap-1 text-[11px] font-medium transition-colors"
+          <Link
+            href={`/family/person/${person.id}`}
+            className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900 text-emerald-800 dark:text-emerald-200 flex flex-col items-center gap-1 text-[11px] font-bold transition-colors"
           >
-            <FileText className="w-4 h-4 text-amber-600" />
-            <span>تقرير طبيب</span>
-          </button>
+            <FileText className="w-4 h-4 text-emerald-600" />
+            <span>تقرير الطبيب</span>
+          </Link>
         </div>
       </div>
     </div>

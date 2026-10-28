@@ -166,7 +166,7 @@ export default function FamilySpaceHome() {
               <span>أفراد الأسرة المسجلين</span>
             </div>
             <p className="text-xs text-slate-600 dark:text-slate-400">
-              تابع الحساسية، التطعيمات، والقياسات الحيوية لكل فرد بسهولة
+              تابع الحساسية، التطعيمات، القياسات الحيوية، وفحص الأعراض وتوجيه التخصصات لكل فرد
             </p>
           </div>
 

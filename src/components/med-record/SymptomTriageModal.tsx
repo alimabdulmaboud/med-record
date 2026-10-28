@@ -54,6 +54,7 @@ export function SymptomTriageModal({
       resetSession();
       loadMedications();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, member?.id]);
 
   useEffect(() => {
@@ -192,6 +193,32 @@ export function SymptomTriageModal({
         notes: `${assessment.summaryNoteForRecord}\nالاحتمالات المبدئية: ${assessment.possibleCauses.join(' | ')}\nنصائح الراحة: ${assessment.comfortAdvice.join(' | ')}`,
         followUpDate: assessment.urgencyLevel === 'emergency' ? 'طوارئ فورية' : undefined
       });
+
+      // Also sync to family encounters table so it shows in the family timeline
+      try {
+        const familyEncKey = 'med_family_person_encounters';
+        const raw = localStorage.getItem(familyEncKey);
+        const list = raw ? JSON.parse(raw) : [];
+        list.push({
+          id: `enc-triage-${Date.now()}`,
+          family_id: 'fam-demo',
+          person_id: member.id,
+          encounter_date: new Date().toISOString().split('T')[0],
+          doctor_name: 'مساعد الفحص الذكي (AI Triage)',
+          specialty: assessment.recommendedSpecialtyAr,
+          facility_name: 'سجلي الطبي المنزلي',
+          diagnosis: `شكوى الأعراض: ${assessment.primaryComplaint}`,
+          notes: `${assessment.summaryNoteForRecord} | الاحتمالات: ${assessment.possibleCauses.join('، ')} | نصائح الراحة: ${assessment.comfortAdvice.join('، ')}`,
+          follow_up_date: null,
+          archived_at: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
+        localStorage.setItem(familyEncKey, JSON.stringify(list));
+      } catch {
+        // ignore storage errors
+      }
+
       setIsSaved(true);
       onAssessmentSaved?.();
     } catch (e) {

@@ -98,6 +98,8 @@ import {
 import { DoctorReportModal } from "@/components/family/DoctorReportModal";
 import { DoctorReportView } from "@/components/family/DoctorReportView";
 import { DoctorReportShareModal } from "@/components/family/DoctorReportShareModal";
+import { SymptomTriageModal } from "@/components/med-record/SymptomTriageModal";
+import type { FamilyMember, BloodType } from "@/types/med-record";
 
 const INITIAL_DEMO_PEOPLE: Person[] = [
   {
@@ -199,6 +201,33 @@ export default function PersonHealthDashboard({
   const [vaccinationStats, setVaccinationStats] = useState<VaccinationStats | null>(null);
   const [isRecordVaccineModalOpen, setIsRecordVaccineModalOpen] = useState(false);
   const [selectedVaccineForModal, setSelectedVaccineForModal] = useState<ScheduledVaccine | null>(null);
+  const [isTriageModalOpen, setIsTriageModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const sp = new URLSearchParams(window.location.search);
+      if (sp.get("triage") === "true") {
+        setIsTriageModalOpen(true);
+      }
+    }
+  }, []);
+
+  const toFamilyMember = (p: Person): FamilyMember => {
+    const ageInfo = calculatePersonAge(p.birth_date);
+    return {
+      id: p.id,
+      userId: p.linked_user_id || "demo-user",
+      fullName: p.name,
+      birthDate: p.birth_date,
+      sex: p.sex,
+      relationship: p.linked_user_id ? "self" : ageInfo.isChild ? "child" : "other",
+      relationshipLabel: p.linked_user_id ? "أنا (صاحب الحساب)" : ageInfo.isChild ? "طفل" : "فرد أسرة",
+      bloodType: (p.blood_type as BloodType) || "unknown",
+      allergies: p.allergies || [],
+      chronicConditions: p.chronic_conditions || [],
+      createdAt: p.created_at,
+    };
+  };
 
   useEffect(() => {
     loadData();
@@ -453,6 +482,15 @@ export default function PersonHealthDashboard({
         <div className="flex items-center gap-2">
           <button
             type="button"
+            onClick={() => setIsTriageModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200 border border-amber-300 dark:border-amber-800 text-xs font-bold hover:bg-amber-100 transition-all cursor-pointer shadow-xs"
+            title="فحص الأعراض والشكوى الحالية وتوجيه التخصص"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+            <span className="hidden sm:inline">فحص الأعراض (AI)</span>
+          </button>
+          <button
+            type="button"
             onClick={handleOpenDoctorReportModal}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 text-xs font-bold hover:bg-emerald-100 transition-all cursor-pointer shadow-xs"
           >
@@ -545,6 +583,15 @@ export default function PersonHealthDashboard({
 
           {/* Primary Quick Actions */}
           <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full md:w-auto">
+            <button
+              type="button"
+              onClick={() => setIsTriageModalOpen(true)}
+              className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold text-xs shadow-md shadow-amber-500/20 flex items-center justify-center gap-2 transition-all transform active:scale-95 cursor-pointer"
+            >
+              <Sparkles className="w-4 h-4 text-white" />
+              <span>فحص الأعراض والشكوى</span>
+            </button>
+
             <button
               type="button"
               onClick={() => setIsUploadModalOpen(true)}
@@ -1162,6 +1209,18 @@ export default function PersonHealthDashboard({
           patientName={person.name}
           onCreateShare={handleCreateShareLink}
           onRevokeShare={handleRevokeShareLink}
+        />
+      )}
+
+      {/* Symptom Triage Modal */}
+      {person && (
+        <SymptomTriageModal
+          isOpen={isTriageModalOpen}
+          onClose={() => setIsTriageModalOpen(false)}
+          member={toFamilyMember(person)}
+          onAssessmentSaved={async () => {
+            await loadData();
+          }}
         />
       )}
     </div>
